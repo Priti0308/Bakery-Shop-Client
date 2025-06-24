@@ -4,6 +4,7 @@ import Select from 'react-select';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import InvoicePreview from './InvoicePreview';
+import html2pdf from 'html2pdf.js';
 
 
 const SalesForm = () => {
