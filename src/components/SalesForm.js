@@ -55,7 +55,6 @@ const SalesForm = () => {
       setSaleItems([...saleItems, { product: productId, quantity: 1 }]);
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 

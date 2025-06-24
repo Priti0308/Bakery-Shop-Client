@@ -16,7 +16,6 @@ function App() {
     <Router>
       <Navbar />
       <Routes>
-
         <Route path='/' element={<Dashboard />} />
         <Route path="/products" element={<ProductForm />} />
         <Route path="/sales" element={<SalesForm />} />
