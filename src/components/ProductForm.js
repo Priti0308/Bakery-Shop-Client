@@ -27,13 +27,60 @@ const ProductForm = () => {
       const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
       setProducts(res.data);
       setTimeout(() => {
-        res.data.forEach((p) => generateBarcode(p._id, p.quantity));
+        res.data.forEach((p) => generateBarcodes(p._id, p.quantity));
       }, 100);
     } catch (err) {
       console.error('Error while fetching products:', err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const generateBarcodes = (id, quantity) => {
+    for (let i = 0; i < quantity; i++) {
+      const canvas = document.createElement('canvas');
+      JsBarcode(canvas, id.toString(), {
+        format: "CODE128",
+        displayValue: false,
+        width: 1,
+        height: 20,
+        margin: 0,
+      });
+      barcodeRefs.current[`${id}-${i}`] = canvas;
+    }
+  };
+
+  const generatePDFWithBarcodes = (product) => {
+    const pdf = new jsPDF();
+    pdf.setFontSize(12);
+
+    let y = 10;
+    let count = 0;
+
+    for (let i = 0; i < product.quantity; i++) {
+      const canvas = barcodeRefs.current[`${product._id}-${i}`];
+      if (!canvas) continue;
+
+      const imgData = canvas.toDataURL("image/png");
+
+      pdf.text(`Price: ₹${product.price}`, 10, y);
+      if (product.manufacturingDate)
+        pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString()}`, 60, y);
+      if (product.expiryDate)
+        pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString()}`, 110, y);
+
+      pdf.addImage(imgData, "PNG", 10, y + 5, 100, 25);
+
+      y += 40;
+      count++;
+
+      if (count % 6 === 0 && i !== product.quantity - 1) {
+        pdf.addPage();
+        y = 10;
+      }
+    }
+
+    pdf.save(`${product.name}_barcodes.pdf`);
   };
 
   const handleChange = (e) => {
@@ -86,7 +133,7 @@ const ProductForm = () => {
     if (!name.trim() || quantity <= 0 || price <= 0) return;
 
     try {
-      await axios.put(`/api/products/${editId}`, editForm);
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/products/${editId}`, editForm);
       fetchProducts();
       setShowModal(false);
       setEditId(null);
@@ -99,80 +146,25 @@ const ProductForm = () => {
     try {
       const confirmation = window.confirm("Are you sure you want to delete this product?");
       if (confirmation) {
-        await axios.delete(`/api/products/${id}`);
+        await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/products/${id}`);
         fetchProducts();
       }
     } catch (err) {
-      console.error('Error Deleting product:', err);
+      console.error('Error deleting product:', err);
     }
   };
 
-  const generateBarcode = (id, quantity) => {
-    for (let i = 0; i < quantity; i++) {
-      const canvas = barcodeRefs.current[`${id}-${i}`];
-      if (canvas) {
-        JsBarcode(canvas, id.toString(), {
-          format: "CODE128",
-          displayValue: false,
-          width: 1,
-          height: 20,
-          margin: 0,
-        });
-      }
-    }
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
-  const generatePDFWithBarcodes = (product) => {
-    const pdf = new jsPDF();
-    pdf.setFontSize(12);
-
-    let y = 10;
-    let count = 0;
-
-    for (let i = 0; i < product.quantity; i++) {
-      const canvas = barcodeRefs.current[`${product._id}-${i}`];
-      if (!canvas) continue;
-
-      const imgData = canvas.toDataURL("image/png");
-
-      pdf.text(`Price: ₹${product.price}`, 10, y);
-      if (product.manufacturingDate)
-        pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString()}`, 60, y);
-      if (product.expiryDate)
-        pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString()}`, 110, y);
-
-      pdf.addImage(imgData, "PNG", 10, y + 5, 100, 25);
-      y += 40;
-      count++;
-
-      if (count % 6 === 0 && i !== product.quantity - 1) {
-        pdf.addPage();
-        y = 10;
-      }
-    }
-
-    pdf.save(`${product.name}_barcodes.pdf`);
+  const handleSearch = () => {
+    fetchProducts();
   };
 
-  const handleBarcodeScan = async (barcode) => {
-    try {
-      const response = await axios.get(`/api/products/barcode/${barcode}`);
-      setBarcodeInfo(response.data);
-    } catch (err) {
-      console.error('Error fetching product by barcode:', err);
-    }
+  const handleClearSearch = () => {
+    setSearchQuery('');
   };
-
-  const handleExportAllBarcodes = () => {
-    products.forEach((p) => generateBarcode(p._id, p.quantity));
-    setTimeout(() => {
-      products.forEach((p) => generatePDFWithBarcodes(p));
-    }, 200);
-  };
-
-  const handleSearchChange = (e) => setSearchQuery(e.target.value);
-  const handleSearch = () => fetchProducts();
-  const handleClearSearch = () => setSearchQuery('');
 
   const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -190,29 +182,79 @@ const ProductForm = () => {
       <form onSubmit={handleSubmit} className="p-4 border rounded shadow bg-white">
         <h5 className="mb-3 border-bottom pb-2 text-primary">Add New Product</h5>
         <div className="row g-4">
+          {/* Product Info */}
           <div className="col-md-4">
             <label className="form-label">Product Name</label>
-            <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} required />
+            <input
+              type="text"
+              className="form-control"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              placeholder="e.g. Choco Muffin"
+              required
+            />
           </div>
+
           <div className="col-md-4">
             <label className="form-label">Quantity</label>
-            <input type="number" className="form-control" name="quantity" value={form.quantity} onChange={handleChange} required />
+            <input
+              type="number"
+              className="form-control"
+              name="quantity"
+              value={form.quantity}
+              onChange={handleChange}
+              placeholder="e.g. 12"
+              required
+            />
           </div>
+
           <div className="col-md-4">
             <label className="form-label">Price (₹)</label>
-            <input type="number" className="form-control" name="price" value={form.price} onChange={handleChange} required />
+            <input
+              type="number"
+              className="form-control"
+              name="price"
+              value={form.price}
+              onChange={handleChange}
+              placeholder="e.g. 60"
+              required
+            />
           </div>
+
+          {/* Additional Info */}
           <div className="col-md-4">
             <label className="form-label">Weight</label>
-            <input type="text" className="form-control" name="weight" value={form.weight} onChange={handleChange} />
+            <input
+              type="text"
+              className="form-control"
+              name="weight"
+              value={form.weight}
+              onChange={handleChange}
+              placeholder="e.g. 250g"
+            />
           </div>
+
           <div className="col-md-4">
             <label className="form-label">Manufacturing Date</label>
-            <input type="date" className="form-control" name="manufacturingDate" value={form.manufacturingDate} onChange={handleChange} />
+            <input
+              type="date"
+              className="form-control"
+              name="manufacturingDate"
+              value={form.manufacturingDate}
+              onChange={handleChange}
+            />
           </div>
+
           <div className="col-md-4">
             <label className="form-label">Expiry Date</label>
-            <input type="date" className="form-control" name="expiryDate" value={form.expiryDate} onChange={handleChange} />
+            <input
+              type="date"
+              className="form-control"
+              name="expiryDate"
+              value={form.expiryDate}
+              onChange={handleChange}
+            />
           </div>
           <div className="col-12 text-end">
             <button className="btn btn-success px-4" type="submit">Save Product</button>
@@ -221,6 +263,7 @@ const ProductForm = () => {
       </form>
 
       <br />
+
       <div className="d-flex justify-content-between mb-4 p-3 bg-dark rounded shadow-sm">
         <div className="col-md-8">
           <input type="text" className="form-control" value={searchQuery} onChange={handleSearchChange} placeholder="Search Products" />
@@ -233,16 +276,7 @@ const ProductForm = () => {
         </div>
       </div>
 
-      {barcodeInfo && (
-        <div className="alert alert-info mt-3">
-          <h5>Product Info</h5>
-          <p><strong>Manufacturing Date:</strong> {new Date(barcodeInfo.manufacturingDate).toLocaleDateString()}</p>
-          <p><strong>Expiry Date:</strong> {new Date(barcodeInfo.expiryDate).toLocaleDateString()}</p>
-        </div>
-      )}
-
       <h3 className="text-center mt-5 mb-3">📦 Product List</h3>
-
       {loading ? (
         <div className="text-center my-5"><Spinner animation="border" /></div>
       ) : (
@@ -265,14 +299,9 @@ const ProductForm = () => {
                 <td>{p.price}</td>
                 <td>{p.weight}</td>
                 <td>
-                  {[...Array(p.quantity)].map((_, i) => (
-                    <canvas
-                      key={`${p._id}-${i}`}
-                      ref={(el) => (barcodeRefs.current[`${p._id}-${i}`] = el)}
-                      style={{ maxWidth: '100%', display: 'block', marginBottom: '4px' }}
-                    />
-                  ))}
-                  <button className="btn btn-outline-success btn-sm mt-1" onClick={() => generatePDFWithBarcodes(p)}>📄 PDF</button>
+                  <button className="btn btn-outline-success btn-sm" onClick={() => generatePDFWithBarcodes(p)}>
+                    📄 PDF
+                  </button>
                 </td>
                 <td>
                   <div className="d-flex gap-1">
@@ -290,7 +319,7 @@ const ProductForm = () => {
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>Edit Product</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+         <Modal.Body>
           <div className="mb-3"><label className="form-label">Name</label><input type="text" className="form-control" name="name" value={editForm.name} onChange={handleEditChange} /></div>
           <div className="mb-3"><label className="form-label">Quantity</label><input type="number" className="form-control" name="quantity" value={editForm.quantity} onChange={handleEditChange} /></div>
           <div className="mb-3"><label className="form-label">Price</label><input type="number" className="form-control" name="price" value={editForm.price} onChange={handleEditChange} /></div>
