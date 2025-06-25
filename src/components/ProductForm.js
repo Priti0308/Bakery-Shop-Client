@@ -8,15 +8,10 @@ import 'react-toastify/dist/ReactToastify.css';
 
 const ProductForm = () => {
   const [products, setProducts] = useState([]);
-  const [form, setForm] = useState({
-    name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: ''
-  });
-  const [editForm, setEditForm] = useState({
-    name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '', barcode: ''
-  });
+  const [form, setForm] = useState({ name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '' });
+  const [editForm, setEditForm] = useState({ name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '', barcode: '' });
   const [editId, setEditId] = useState(null);
   const [showModal, setShowModal] = useState(false);
-  const [barcodeInfo, setBarcodeInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const barcodeRefs = useRef({});
@@ -53,7 +48,6 @@ const ProductForm = () => {
   const generatePDFWithBarcodes = (product) => {
     const pdf = new jsPDF();
     pdf.setFontSize(12);
-
     let y = 10;
     let count = 0;
 
@@ -62,16 +56,14 @@ const ProductForm = () => {
       if (!canvas) continue;
 
       const imgData = canvas.toDataURL("image/png");
-
-      pdf.text(`Price: Rs. ${product.price}`, 10, y);
+      pdf.text(`Price: ₹${product.price}`, 10, y);
 
       if (product.manufacturingDate)
-        pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString()}`, 60, y);
+        pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, 60, y);
       if (product.expiryDate)
-        pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString()}`, 110, y);
+        pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString('en-IN')}`, 110, y);
 
       pdf.addImage(imgData, "PNG", 10, y + 5, 100, 25);
-
       y += 40;
       count++;
 
@@ -84,34 +76,27 @@ const ProductForm = () => {
     pdf.save(`${product.name}_barcodes.pdf`);
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleEditChange = (e) => {
-    setEditForm({ ...editForm, [e.target.name]: e.target.value });
-  };
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, quantity, price } = form;
     if (!name.trim() || quantity <= 0 || price <= 0) return;
 
-    const payload = {
-      name: name.trim(),
-      quantity: Number(quantity),
-      price: Number(price),
-      weight: form.weight,
-      expiryDate: form.expiryDate,
-      manufacturingDate: form.manufacturingDate,
-    };
-
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/products`, payload);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/products`, {
+        ...form,
+        name: name.trim(),
+        quantity: Number(quantity),
+        price: Number(price),
+      });
       setForm({ name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '' });
       fetchProducts();
+      toast.success('Product added successfully');
     } catch (err) {
       console.error('Error while adding product:', err);
+      toast.error('Failed to add product');
     }
   };
 
@@ -138,38 +123,27 @@ const ProductForm = () => {
       fetchProducts();
       setShowModal(false);
       setEditId(null);
+      toast.success('Product updated successfully');
     } catch (err) {
       console.error('Error editing product:', err);
+      toast.error('Failed to update product');
     }
   };
 
   const handleDelete = async (id) => {
-    try {
-      const confirmation = window.confirm("Are you sure you want to delete this product?");
-      if (confirmation) {
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      try {
         await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/products/${id}`);
         fetchProducts();
+        toast.info('Product deleted');
+      } catch (err) {
+        console.error('Error deleting product:', err);
       }
-    } catch (err) {
-      console.error('Error deleting product:', err);
     }
   };
 
-  const handleSearchChange = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  const handleSearch = () => {
-    fetchProducts();
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
-
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearchChange = (e) => setSearchQuery(e.target.value);
+  const filteredProducts = products.filter((product) => product.name.toLowerCase().includes(searchQuery.toLowerCase()));
 
   useEffect(() => {
     fetchProducts();
@@ -178,149 +152,91 @@ const ProductForm = () => {
   return (
     <div className="container mt-4">
       <ToastContainer position="top-center" autoClose={2000} />
-      <h2 className="text-center mb-4 text-primary">Add Product</h2>
+      <h2 className="text-center mb-4 text-primary fw-bold">🛍 Add Product</h2>
 
-      <form onSubmit={handleSubmit} className="p-4 border rounded shadow bg-white">
-        <h5 className="mb-3 border-bottom pb-2 text-primary">Add New Product</h5>
+      <form onSubmit={handleSubmit} className="p-4 border rounded-4 shadow-lg bg-white mb-5">
+        <h5 className="mb-3 pb-2 border-bottom text-dark fw-semibold">Product Details</h5>
         <div className="row g-4">
-          {/* Product Info */}
           <div className="col-md-4">
-            <label className="form-label">Product Name</label>
-            <input
-              type="text"
-              className="form-control"
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              placeholder="e.g. Choco Muffin"
-              required
-            />
+            <label className="form-label fw-semibold">Product Name</label>
+            <input type="text" className="form-control" name="name" value={form.name} onChange={handleChange} placeholder="e.g. Choco Muffin" required />
           </div>
-
           <div className="col-md-4">
-            <label className="form-label">Quantity</label>
-            <input
-              type="number"
-              className="form-control"
-              name="quantity"
-              value={form.quantity}
-              onChange={handleChange}
-              placeholder="e.g. 12"
-              required
-            />
+            <label className="form-label fw-semibold">Quantity</label>
+            <input type="number" className="form-control" name="quantity" value={form.quantity} onChange={handleChange} placeholder="e.g. 12" required />
           </div>
-
           <div className="col-md-4">
-            <label className="form-label">Price (₹)</label>
-            <input
-              type="number"
-              className="form-control"
-              name="price"
-              value={form.price}
-              onChange={handleChange}
-              placeholder="e.g. 60"
-              required
-            />
+            <label className="form-label fw-semibold">Price (₹)</label>
+            <input type="number" className="form-control" name="price" value={form.price} onChange={handleChange} placeholder="e.g. 60" required />
           </div>
-
-          {/* Additional Info */}
           <div className="col-md-4">
-            <label className="form-label">Weight</label>
-            <input
-              type="text"
-              className="form-control"
-              name="weight"
-              value={form.weight}
-              onChange={handleChange}
-              placeholder="e.g. 250g"
-            />
+            <label className="form-label fw-semibold">Weight</label>
+            <input type="text" className="form-control" name="weight" value={form.weight} onChange={handleChange} placeholder="e.g. 250g" />
           </div>
-
           <div className="col-md-4">
-            <label className="form-label">Manufacturing Date</label>
-            <input
-              type="date"
-              className="form-control"
-              name="manufacturingDate"
-              value={form.manufacturingDate}
-              onChange={handleChange}
-            />
+            <label className="form-label fw-semibold">Manufacturing Date</label>
+            <input type="date" className="form-control" name="manufacturingDate" value={form.manufacturingDate} onChange={handleChange} />
           </div>
-
           <div className="col-md-4">
-            <label className="form-label">Expiry Date</label>
-            <input
-              type="date"
-              className="form-control"
-              name="expiryDate"
-              value={form.expiryDate}
-              onChange={handleChange}
-            />
+            <label className="form-label fw-semibold">Expiry Date</label>
+            <input type="date" className="form-control" name="expiryDate" value={form.expiryDate} onChange={handleChange} />
           </div>
-          <div className="col-12 text-end">
+          <div className="col-12 text-end mt-2">
             <button className="btn btn-success px-4" type="submit">Save Product</button>
           </div>
         </div>
       </form>
 
-      <br />
-
-      <div className="d-flex justify-content-between mb-4 p-3 bg-dark rounded shadow-sm">
-        <div className="col-md-8">
-          <input type="text" className="form-control" value={searchQuery} onChange={handleSearchChange} placeholder="Search Products" />
-        </div>
-        <div className="col-md-2">
-          <button className="btn btn-primary w-100" onClick={handleSearch}>Search</button>
-        </div>
-        <div className="col-md-1">
-          <button className="btn btn-danger w-100" onClick={handleClearSearch}>Clear</button>
-        </div>
+      <div className="d-flex justify-content-between align-items-center gap-3 mb-4">
+        <input type="text" className="form-control shadow-sm" value={searchQuery} onChange={handleSearchChange} placeholder="🔍 Search Products..." />
       </div>
 
-      <h3 className="text-center mt-5 mb-3">📦 Product List</h3>
+      <h4 className="text-center mb-3 fw-bold text-dark">📦 Product List</h4>
       {loading ? (
         <div className="text-center my-5"><Spinner animation="border" /></div>
       ) : (
-        <table className="table table-bordered table-hover">
-          <thead className="table-dark">
-            <tr>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>Price (₹)</th>
-              <th>Weight</th>
-              <th style={{ width: '140px' }}>Barcode</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.map((p) => (
-              <tr key={p._id}>
-                <td>{p.name}</td>
-                <td>{p.quantity}</td>
-                <td>{p.price}</td>
-                <td>{p.weight}</td>
-                <td>
-                  <button className="btn btn-outline-success btn-sm" onClick={() => generatePDFWithBarcodes(p)}>
-                    📄 PDF
-                  </button>
-                </td>
-                <td>
-                  <div className="d-flex gap-1">
-                    <button className="btn btn-warning btn-sm" onClick={() => handleEdit(p)}>Edit</button>
-                    <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(p._id)}>Delete</button>
-                  </div>
-                </td>
+        <div className="table-responsive shadow-sm rounded">
+          <table className="table table-bordered table-hover align-middle">
+            <thead className="table-dark">
+              <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Price (₹)</th>
+                <th>Weight</th>
+                <th>Barcode</th>
+                <th>Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredProducts.map((p) => (
+                <tr key={p._id}>
+                  <td>{p.name}</td>
+                  <td>{p.quantity}</td>
+                  <td>{p.price}</td>
+                  <td>{p.weight}</td>
+                  <td>
+                    <button className="btn btn-outline-success btn-sm" onClick={() => generatePDFWithBarcodes(p)}>
+                      📄 PDF
+                    </button>
+                  </td>
+                  <td>
+                    <div className="d-flex gap-2">
+                      <button className="btn btn-warning btn-sm" onClick={() => handleEdit(p)}>Edit</button>
+                      <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(p._id)}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
 
       <Modal show={showModal} onHide={() => setShowModal(false)}>
         <Modal.Header closeButton className="bg-primary text-white">
           <Modal.Title>Edit Product</Modal.Title>
         </Modal.Header>
-         <Modal.Body>
+        <Modal.Body>
           <div className="mb-3"><label className="form-label">Name</label><input type="text" className="form-control" name="name" value={editForm.name} onChange={handleEditChange} /></div>
           <div className="mb-3"><label className="form-label">Quantity</label><input type="number" className="form-control" name="quantity" value={editForm.quantity} onChange={handleEditChange} /></div>
           <div className="mb-3"><label className="form-label">Price</label><input type="number" className="form-control" name="price" value={editForm.price} onChange={handleEditChange} /></div>

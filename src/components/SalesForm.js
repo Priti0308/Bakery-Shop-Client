@@ -6,7 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import InvoicePreview from './InvoicePreview';
 import html2pdf from 'html2pdf.js';
 
-
 const SalesForm = () => {
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -30,6 +29,7 @@ const SalesForm = () => {
         setCustomers(res2.data);
       } catch (err) {
         console.error('Error loading data:', err);
+        toast.error('Error fetching data');
       }
     };
     fetchData();
@@ -56,6 +56,7 @@ const SalesForm = () => {
       setSaleItems([...saleItems, { product: productId, quantity: 1 }]);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -63,46 +64,50 @@ const SalesForm = () => {
       (!customerId && (!newCustomerName.trim() || !newCustomerAddress.trim() || !newCustomerContact.trim())) ||
       saleItems.length === 0
     ) {
+      toast.error('Please fill customer details and add at least one product.');
       return;
     }
 
     try {
       let finalCustomerId = customerId;
 
-      if (!finalCustomerId && newCustomerName.trim() && newCustomerAddress.trim() && newCustomerContact.trim()) {
-        const newCustomer = await axios.post('/api/customers', {
-          name: newCustomerName.trim(),
-          address: newCustomerAddress.trim(),
-          contact: newCustomerContact.trim()
+      if (!finalCustomerId && newCustomerName.trim()) {
+        const newCustomer = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, {
+          name: newCustomerName,
+          address: newCustomerAddress,
+          contact: newCustomerContact
         });
-
         finalCustomerId = newCustomer.data._id;
         setCustomerId(finalCustomerId);
       }
 
-      const saleRes = await axios.post('/api/sales', {
+      const saleRes = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/sales`, {
         customer: finalCustomerId,
         items: saleItems
       });
 
       setSavedSaleId(saleRes.data._id);
       setShowModal(true);
+      toast.success('Sale saved successfully!');
     } catch (err) {
       console.error('Error saving sale:', err);
+      toast.error('Failed to save sale.');
     }
   };
 
   const handleAddLedger = async () => {
     try {
-      await axios.post('/api/ledger', {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`, {
         sale: savedSaleId,
         customer: customerId,
         total: totalAmount,
-        products: saleItems.map(item => item.product),
+        products: saleItems.map(item => item.product)
       });
       resetForm();
+      toast.success('Ledger added.');
     } catch (err) {
       console.error(err);
+      toast.error('Error adding ledger.');
     } finally {
       setShowModal(false);
     }
@@ -110,17 +115,19 @@ const SalesForm = () => {
 
   const handleMarkAsPaid = async () => {
     try {
-      const ledgerRes = await axios.post('/api/ledger', {
+      const ledgerRes = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`, {
         sale: savedSaleId,
         customer: customerId,
         total: totalAmount,
-        products: saleItems.map(item => item.product),
+        products: saleItems.map(item => item.product)
       });
 
-      await axios.patch('/api/ledger/${ledgerRes.data._id}/pay');
+      await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${ledgerRes.data._id}/pay`);
       resetForm();
+      toast.success('Marked as paid.');
     } catch (err) {
       console.error(err);
+      toast.error('Error marking as paid.');
     } finally {
       setShowModal(false);
     }
@@ -145,7 +152,6 @@ const SalesForm = () => {
       html2canvas: { scale: 2 },
       jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
     };
-
     html2pdf().from(element).set(opt).save();
   };
 
@@ -154,35 +160,38 @@ const SalesForm = () => {
     : {
       name: newCustomerName,
       contact: newCustomerContact,
-      address: newCustomerAddress,
+      address: newCustomerAddress
     };
-
   return (
-    <div className="container mt-4">
-      <h2>Sales Billing</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-3">
-          <label className="form-label">Search or Select Customer</label>
-          <Select
-            options={customers.map(c => ({
-              value: c._id,
-              label: `${c.name} - ${c.contact}`
-            }))}
-            onChange={option => {
-              setCustomerId(option ? option.value : '');
-              setNewCustomerName('');
-            }}
-            placeholder="Search customer..."
-            isClearable
-          />
-        </div>
 
-        <div className="mb-3">
-          <label className="form-label">Enter New Customer Name</label>
+    <div className="container mt-5">
+  <div className="bg-white shadow-lg rounded-4 p-4 p-md-5">
+    <h2 className="mb-4 text-primary fw-bold fs-3">🧾 Sales Billing</h2>
+
+    <form onSubmit={handleSubmit}>
+      <div className="mb-3">
+        <label className="form-label fw-semibold">👤 Search or Select Customer</label>
+        <Select
+          options={customers.map(c => ({
+            value: c._id,
+            label: `🆔 ${c.name} - 📞 ${c.contact}`
+          }))}
+          onChange={option => {
+            setCustomerId(option ? option.value : '');
+            setNewCustomerName('');
+          }}
+          placeholder="🔍 Search customer..."
+          isClearable
+        />
+      </div>
+
+      <div className="row g-3">
+        <div className="col-md-4">
+          <label className="form-label fw-semibold">🆕 Customer Name</label>
           <input
             type="text"
             className="form-control"
-            placeholder="Enter customer name"
+            placeholder="✍️ Enter name"
             value={newCustomerName}
             onChange={e => {
               setNewCustomerName(e.target.value);
@@ -190,63 +199,63 @@ const SalesForm = () => {
             }}
           />
         </div>
-
-        <div className="mb-3">
-          <label className="form-label">Customer Contact Number</label>
+        <div className="col-md-4">
+          <label className="form-label fw-semibold">📞 Contact</label>
           <input
             type="text"
             className="form-control"
-            placeholder="Enter contact number"
+            placeholder="📱 Enter contact"
             value={newCustomerContact}
             onChange={e => setNewCustomerContact(e.target.value)}
           />
         </div>
-
-        <div className="mb-3">
-          <label className="form-label">Customer Address</label>
+        <div className="col-md-4">
+          <label className="form-label fw-semibold">🏠 Address</label>
           <input
             type="text"
             className="form-control"
-            placeholder="Enter address"
+            placeholder="📍 Enter address"
             value={newCustomerAddress}
             onChange={e => setNewCustomerAddress(e.target.value)}
           />
         </div>
+      </div>
 
-        <div className="mb-3">
-          <label className="form-label">Search & Select Product</label>
-          <Select
-            options={products.map(p => ({
-              value: p._id,
-              label: `${p.name} (₹${p.price})`
-            }))}
-            onChange={option => addItem(option.value)}
-            placeholder="Type product name..."
-            isClearable
-          />
-        </div>
+      <div className="mt-4 mb-3">
+        <label className="form-label fw-semibold">🛒 Select Product</label>
+        <Select
+          options={products.map(p => ({
+            value: p._id,
+            label: `${p.name} (₹${p.price})`
+          }))}
+          onChange={option => addItem(option.value)}
+          placeholder="🧃 Type product name..."
+          isClearable
+        />
+      </div>
 
-        {saleItems.length > 0 && (
-          <div className="mb-3">
-            <table className="table table-bordered">
-              <thead>
+      {saleItems.length > 0 && (
+        <div className="mt-4">
+          <h5 className="fw-semibold text-success mb-3">🧺 Selected Items</h5>
+          <div className="table-responsive">
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-light">
                 <tr>
-                  <th>Product</th>
-                  <th>Qty</th>
-                  <th>Rate</th>
-                  <th>Total</th>
-                  <th>Action</th>
+                  <th>🛍️ Product</th>
+                  <th>🔢 Qty</th>
+                  <th>💰 Rate</th>
+                  <th>🧾 Total</th>
+                  <th>❌ Action</th>
                 </tr>
               </thead>
               <tbody>
                 {saleItems.map((item, index) => {
                   const product = products.find(p => p._id === item.product);
                   if (!product) return null;
-
                   return (
                     <tr key={product._id}>
                       <td>{product.name}</td>
-                      <td>
+                      <td style={{ width: "100px" }}>
                         <input
                           type="number"
                           min="1"
@@ -257,8 +266,7 @@ const SalesForm = () => {
                             updatedItems[index].quantity = newQty;
                             setSaleItems(updatedItems);
                           }}
-                          className="form-control"
-                          style={{ width: '80px' }}
+                          className="form-control form-control-sm"
                         />
                       </td>
                       <td>₹{product.price}</td>
@@ -266,13 +274,13 @@ const SalesForm = () => {
                       <td>
                         <button
                           type="button"
-                          className="btn btn-danger btn-sm"
+                          className="btn btn-sm btn-outline-danger"
                           onClick={() => {
                             const updatedItems = saleItems.filter((_, i) => i !== index);
                             setSaleItems(updatedItems);
                           }}
                         >
-                          Remove
+                          ❌ Remove
                         </button>
                       </td>
                     </tr>
@@ -281,59 +289,65 @@ const SalesForm = () => {
               </tbody>
             </table>
           </div>
-        )}
-
-        <h5 className="mt-4">Invoice Preview:</h5>
-        <div className="mb-3 border p-3 bg-light">
-          <InvoicePreview
-            customer={selectedCustomer || {}}
-            saleItems={saleItems}
-            products={products}
-            invoiceNo={invoiceNo}
-            totalAmount={totalAmount}
-          />
         </div>
-
-        <div style={{ display: 'none' }}>
-          <InvoicePreview
-            ref={componentRef}
-            customer={selectedCustomer || {}}
-            saleItems={saleItems}
-            products={products}
-            invoiceNo={invoiceNo}
-            totalAmount={totalAmount}
-          />
-        </div>
-
-        <button type="submit" className="btn btn-success me-3">Save Sale</button>
-        <button type="button" onClick={handleGeneratePDF} className="btn btn-secondary">Download Invoice PDF</button>
-      </form>
-
-      {showModal && (
-        <>
-          <div className="modal-backdrop fade show"></div>
-          <div className="modal fade show d-block" tabIndex="-1" role="dialog" style={{ zIndex: 1050 }}>
-            <div className="modal-dialog modal-dialog-centered" role="document">
-              <div className="modal-content">
-                <div className="modal-header">
-                  <h5 className="modal-title">Select Ledger Option</h5>
-                  <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
-                </div>
-                <div className="modal-body">
-                  <p>How would you like to proceed with the ledger?</p>
-                </div>
-                <div className="modal-footer">
-                  <button onClick={handleAddLedger} className="btn btn-primary">Add Ledger</button>
-                  <button onClick={handleMarkAsPaid} className="btn btn-success">Mark as Paid</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </>
       )}
 
-      <ToastContainer position="top-center" autoClose={2000} />
-    </div>
+      <div className="mt-5">
+        <h5 className="text-primary fw-semibold mb-3">📄 Invoice Preview</h5>
+        <div className="border rounded-3 p-3 bg-light">
+          <InvoicePreview
+            customer={selectedCustomer || {}}
+            saleItems={saleItems}
+            products={products}
+            invoiceNo={invoiceNo}
+            totalAmount={totalAmount}
+          />
+        </div>
+      </div>
+
+      {/* Hidden for PDF */}
+      <div style={{ display: 'none' }}>
+        <InvoicePreview
+          ref={componentRef}
+          customer={selectedCustomer || {}}
+          saleItems={saleItems}
+          products={products}
+          invoiceNo={invoiceNo}
+          totalAmount={totalAmount}
+        />
+      </div>
+
+      <div className="d-flex flex-wrap gap-3 mt-4">
+        <button type="submit" className="btn btn-success px-4">💾 Save Sale</button>
+        <button type="button" onClick={handleGeneratePDF} className="btn btn-secondary px-4">📥 Download PDF</button>
+      </div>
+    </form>
+
+    {/* Modal */}
+    {showModal && (
+      <div className="modal show fade d-block" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div className="modal-dialog modal-dialog-centered">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">📒 Select Ledger Option</h5>
+              <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+            </div>
+            <div className="modal-body">
+              <p>🧾 How would you like to proceed with the ledger?</p>
+            </div>
+            <div className="modal-footer">
+              <button onClick={handleAddLedger} className="btn btn-primary">📘 Add Ledger</button>
+              <button onClick={handleMarkAsPaid} className="btn btn-success">✅ Mark as Paid</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
+    <ToastContainer position="top-center" autoClose={2000} />
+  </div>
+</div>
+
   );
 };
 

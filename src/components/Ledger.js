@@ -218,7 +218,7 @@ const handlePartialPay = async (id) => {
 
   return (
     <div className="container mt-4">
-      <h2>Customer Ledger</h2>
+      <h2 className="text-center text-dark mb-5">Customer Ledger</h2>
 
       {/* Filter Section */}
       <div className="row mb-3">
