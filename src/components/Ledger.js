@@ -21,7 +21,7 @@ const Ledger = () => {
  
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('/api/products');
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
       setProducts(res.data);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -61,7 +61,7 @@ const Ledger = () => {
   const fetchLedger = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get('/api/ledger');
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`);
       const allLedgers = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setLedgerData(allLedgers);
       setFilteredData(groupByCustomer(allLedgers));
@@ -75,7 +75,7 @@ const Ledger = () => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get('/api/customers');
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`);
       setCustomers(res.data);
     } catch (err) {
       console.error('Error fetching customers:', err);
@@ -125,14 +125,14 @@ const handleAddLedger = async () => {
       const updatedProducts = [...new Set([...existingLedger.products.map(p => p.name), ...productNames])]; 
 
       
-      await axios.put('/api/ledger/${existingLedger._id}', {
-        total: updatedTotal,
-        products: updatedProducts,
-      });
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${existingLedger._id}`, {
+      total: updatedTotal,
+      products: updatedProducts,
+});
 
     } else {
      
-      await axios.post('/api/ledger', {
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`, {
         customer: newCustomerId,
         products: productNames,
         total: parseFloat(newTotal),
