@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// import 'react-toastify/dist/ReactToastify.css';
 
 const CustomerForm = () => {
   const [form, setForm] = useState({ name: '', address: '', contact: '' });
@@ -24,7 +24,7 @@ const CustomerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/customers', form);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`,form);
       setForm({ name: '', address: '', contact: '' });
       fetchCustomers();
     } catch (err) {
