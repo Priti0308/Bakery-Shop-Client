@@ -24,7 +24,7 @@ const ProductForm = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`/api/products`);
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
       setProducts(res.data);
       setTimeout(() => {
         res.data.forEach((p) => generateBarcode(p._id));
@@ -61,7 +61,7 @@ const ProductForm = () => {
     };
 
     try {
-      await axios.post('/api/products', payload);
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/products`,payload);
       setForm({ name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '' });
       fetchProducts();
     } catch (err) {
