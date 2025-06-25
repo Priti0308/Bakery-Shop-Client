@@ -66,7 +66,7 @@ const ProductForm = () => {
       fetchProducts();
     } catch (err) {
       console.error('Error while adding product:', err);
-    }
+    }  
   };
 
   const handleEdit = (product) => {
