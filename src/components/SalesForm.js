@@ -187,11 +187,11 @@ const SalesForm = () => {
 
       <div className="row g-3">
         <div className="col-md-4">
-          <label className="form-label fw-semibold">🆕 Customer Name</label>
+          <label className="form-label fw-semibold">Customer Name</label>
           <input
             type="text"
             className="form-control"
-            placeholder="✍️ Enter name"
+            placeholder="Enter name"
             value={newCustomerName}
             onChange={e => {
               setNewCustomerName(e.target.value);
@@ -200,21 +200,21 @@ const SalesForm = () => {
           />
         </div>
         <div className="col-md-4">
-          <label className="form-label fw-semibold">📞 Contact</label>
+          <label className="form-label fw-semibold">Contact</label>
           <input
             type="text"
             className="form-control"
-            placeholder="📱 Enter contact"
+            placeholder="Enter contact"
             value={newCustomerContact}
             onChange={e => setNewCustomerContact(e.target.value)}
           />
         </div>
         <div className="col-md-4">
-          <label className="form-label fw-semibold">🏠 Address</label>
+          <label className="form-label fw-semibold"> Address</label>
           <input
             type="text"
             className="form-control"
-            placeholder="📍 Enter address"
+            placeholder="Enter address"
             value={newCustomerAddress}
             onChange={e => setNewCustomerAddress(e.target.value)}
           />
@@ -229,7 +229,7 @@ const SalesForm = () => {
             label: `${p.name} (₹${p.price})`
           }))}
           onChange={option => addItem(option.value)}
-          placeholder="🧃 Type product name..."
+          placeholder="Type product name..."
           isClearable
         />
       </div>
