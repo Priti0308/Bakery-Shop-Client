@@ -18,8 +18,8 @@ const InvoicePreview = forwardRef(({ customer = {}, saleItems = [], products = [
       {/* Company Header */}
       <div className="text-center mb-4">
 
-        <h3 className="mt-2">इंद्रायणी बेकर्स, स्वीट्स अँड केक्स </h3>
-        <p> Indrayani Bakers Khanapur Road Vita 415311 | Contact: +91 91445 06006 </p>
+        <h3 className="mt-2 fw-bold">इंद्रायणी बेकर्स, स्वीट्स अँड केक्स </h3>
+        <p className="mt-2 fw-bold"> Indrayani Bakers Khanapur Road Vita 415311 | Contact: +91 9146006006 </p>
         <hr />
       </div>
 
@@ -64,7 +64,7 @@ const InvoicePreview = forwardRef(({ customer = {}, saleItems = [], products = [
       <div className="text-center mt-4">
         <p><strong>Scan to Pay:</strong></p>
         <img src={qrCodeBase64} alt="QR Code for Payment" style={{ height: '180px' }} />
-        <p className="mt-2">Google Pay / PhonePe / Paytm UPI ID: 9144506006@okbizaxis</p>
+        <p className="mt-2">Google Pay / PhonePe / Paytm UPI ID: 9146006006@okbizaxis</p>
       </div>
 
       {/* Spacer */}
@@ -72,7 +72,7 @@ const InvoicePreview = forwardRef(({ customer = {}, saleItems = [], products = [
 
       {/* Total */}
       <div className="text-end mt-3">
-        <h5><strong>Total Amount: ${total.toFixed(2)}</strong></h5>
+        <h5><strong>Total Amount: ₹{total.toFixed(2)}</strong></h5>
       </div>
 
     </div>

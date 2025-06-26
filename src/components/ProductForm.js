@@ -56,7 +56,7 @@ const ProductForm = () => {
       if (!canvas) continue;
 
       const imgData = canvas.toDataURL("image/png");
-      pdf.text(`Price: ₹${product.price}`, 10, y);
+      pdf.text(`Price: ${product.price}`, 10, y);
 
       if (product.manufacturingDate)
         pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, 60, y);
