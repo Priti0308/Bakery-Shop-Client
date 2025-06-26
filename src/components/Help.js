@@ -1,36 +1,38 @@
 import React from 'react';
-import { Container, Row, Col, Card } from 'react-bootstrap';
+import { Container, Card } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Help = () => {
   return (
     <Container className="my-5 d-flex justify-content-center align-items-center flex-column">
       <div className="text-center mb-4">
-        <h2 className="fw-bold text-dark">Varad Consultants & Analyst Pvt. Ltd.</h2>
-        <p className="text-muted fs-5">How can we help you today?</p>
+        <h2 className="fw-bold text-black">Varad Consultants & Analyst Pvt. Ltd.</h2>
+        <p className="text-secondary fs-5">How can we help you today?</p>
       </div>
 
-      <Card className="shadow-sm border-0 rounded-4" style={{ maxWidth: '500px', width: '100%' }}>
+      <Card className="shadow border-0 rounded-4" style={{ maxWidth: '600px', width: '100%' }}>
         <Card.Body className="p-4 text-center">
-          <h4 className="mb-4" style={{ color: '#6f42c1' }}>📞 Contact Us</h4>
+          <h4 className="fw-bold mb-4" style={{ color: '#5b2c91' }}>📞 Contact Us</h4>
 
-          <p className="mb-3">
-            <strong>🌐 Website:</strong><br />
-            <a href="https://www.varadanalyst.com" target="_blank" rel="noopener noreferrer">
+          <div className="mb-3">
+            <div className="fw-semibold text-muted">🌐 Website</div>
+            <a href="https://www.varadanalyst.com" target="_blank" rel="noopener noreferrer" className="text-decoration-none text-primary">
               www.varadanalyst.com
             </a>
-          </p>
+          </div>
 
-          <p className="mb-3">
-            <strong>📱 Phone:</strong><br />
-            +91 84464 48461
-          </p>
+          <div className="mb-3">
+            <div className="fw-semibold text-muted">📱 Phone</div>
+            <div className="text-dark fs-6">+91 84464 48461</div>
+          </div>
 
-          <p className="mb-0">
-            <strong>📍 Address:</strong><br />
-            505, Shivcity Center,<br />
-            Vijaynagar, Sangli – 416416
-          </p>
+          <div>
+            <div className="fw-semibold text-muted">📍 Address</div>
+            <div className="text-dark">
+              505, Shivcity Center,<br />
+              Vijaynagar, Sangli – 416416
+            </div>
+          </div>
         </Card.Body>
       </Card>
     </Container>
