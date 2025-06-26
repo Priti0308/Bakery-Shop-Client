@@ -6,6 +6,7 @@ import SalesForm from './components/SalesForm';
 import CustomerForm from './components/CustomerForm';
 import Reports from './components/Reports';
 import Ledger from './components/Ledger';
+import Help from './components/Help'; 
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Dashboard from './components/Dashboard';
@@ -22,6 +23,7 @@ function App() {
         <Route path="/customers" element={<CustomerForm />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/ledger" element={<Ledger />} />
+        <Route path="/help" element={<Help />} />
       </Routes>
 
       <ToastContainer position="top-center" autoClose={2000} />

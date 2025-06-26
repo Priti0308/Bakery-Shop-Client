@@ -47,7 +47,12 @@ const Navbar = () => (
           <li className="nav-item">
             <Link className="nav-link nav-hover text-white fw-medium" to="/ledger">
               Ledger
-            </Link>
+            </Link> 
+          </li>
+          <li className="nav-item">
+            <Link className="nav-link nav-hover text-white fw-medium" to="/help">
+              Help
+            </Link> 
           </li>
         </ul>
       </div>

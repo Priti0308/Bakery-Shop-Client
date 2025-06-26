@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast, ToastContainer } from 'react-toastify';
-// import 'react-toastify/dist/ReactToastify.css';
+import 'react-toastify/dist/ReactToastify.css';
 
 const CustomerForm = () => {
   const [form, setForm] = useState({ name: '', address: '', contact: '' });
   const [customers, setCustomers] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
   const fetchCustomers = async () => {
     try {
@@ -24,29 +25,51 @@ const CustomerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, form);
+      if (editingId) {
+        await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/customers/${editingId}`, form);
+        toast.success('Customer updated');
+      } else {
+        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, form);
+        toast.success('Customer added');
+      }
       setForm({ name: '', address: '', contact: '' });
+      setEditingId(null);
       fetchCustomers();
     } catch (err) {
       console.error('Error saving customer:', err);
-      toast.error('Failed to add customer');
+      toast.error('Failed to save customer');
+    }
+  };
+
+  const handleEdit = (customer) => {
+    setForm({ name: customer.name, address: customer.address, contact: customer.contact });
+    setEditingId(customer._id);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this customer?')) return;
+    try {
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/customers/${id}`);
+      toast.success('Customer deleted');
+      fetchCustomers();
+    } catch (err) {
+      console.error('Error deleting customer:', err);
+      toast.error('Failed to delete customer');
     }
   };
 
   useEffect(() => {
     fetchCustomers();
-    const interval = setInterval(fetchCustomers, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   return (
     <div className="container my-5">
       <ToastContainer position="top-center" autoClose={2000} />
 
-      {/* --- Add Customer Card --- */}
+      {/* --- Add/Edit Customer Card --- */}
       <div className="card shadow border-0 mb-5">
         <div className="card-body p-4">
-          <h2 className="text-primary mb-4">📝 Add Customer</h2>
+          <h2 className="text-primary mb-4">{editingId ? ' Update Customer' : ' Add Customer'}</h2>
           <form onSubmit={handleSubmit}>
             <div className="row g-4">
               <div className="col-md-4">
@@ -87,9 +110,21 @@ const CustomerForm = () => {
               </div>
             </div>
             <div className="mt-4 text-end">
-              <button type="submit" className="btn btn-success px-4">
-                ➕ Add Customer
+              <button type="submit" className={`btn ${editingId ? 'btn-primary' : 'btn-success'} px-4`}>
+                {editingId ? ' Update Customer' : ' Add Customer'}
               </button>
+              {editingId && (
+                <button
+                  type="button"
+                  className="btn btn-secondary ms-2"
+                  onClick={() => {
+                    setForm({ name: '', address: '', contact: '' });
+                    setEditingId(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              )}
             </div>
           </form>
         </div>
@@ -103,22 +138,38 @@ const CustomerForm = () => {
             <table className="table table-hover table-striped align-middle">
               <thead className="table-dark">
                 <tr>
-                  <th scope="col">Name</th>
-                  <th scope="col">Address</th>
-                  <th scope="col">Contact</th>
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Contact</th>
+                  <th className="text-end">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {customers.map((c) => (
-                  <tr key={c._id}>
-                    <td>{c.name}</td>
-                    <td>{c.address}</td>
-                    <td>{c.contact}</td>
-                  </tr>
-                ))}
-                {customers.length === 0 && (
+                {customers.length > 0 ? (
+                  customers.map((c) => (
+                    <tr key={c._id}>
+                      <td>{c.name}</td>
+                      <td>{c.address}</td>
+                      <td>{c.contact}</td>
+                      <td className="text-end">
+                        <button
+                          className="btn btn-sm btn-outline-primary me-2"
+                          onClick={() => handleEdit(c)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-sm btn-outline-danger"
+                          onClick={() => handleDelete(c._id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
-                    <td colSpan="3" className="text-center text-muted">
+                    <td colSpan="4" className="text-center text-muted">
                       No customers found
                     </td>
                   </tr>
