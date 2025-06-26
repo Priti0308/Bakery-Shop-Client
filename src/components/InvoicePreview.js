@@ -44,13 +44,13 @@ const InvoicePreview = forwardRef(
         </div>
 
         {/* Product Table */}
-        <table className="table table-borderless align-middle">
-          <thead className="border-bottom bg-light">
-            <tr className="text-uppercase small text-muted">
-              <th>Product</th>
-              <th className="text-center">Qty</th>
-              <th className="text-end">Price</th>
-              <th className="text-end">Total</th>
+        <table className="table table-bordered align-middle">
+          <thead className="bg-light text-uppercase text-muted small">
+            <tr>
+              <th style={{ width: '40%' }}>Product</th>
+              <th className="text-center" style={{ width: '15%' }}>Quantity</th>
+              <th className="text-end" style={{ width: '20%' }}>Price (₹)</th>
+              <th className="text-end" style={{ width: '25%' }}>Total (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -70,7 +70,7 @@ const InvoicePreview = forwardRef(
           </tbody>
         </table>
 
-        {/* Total */}
+        {/* Total Section */}
         <div className="d-flex justify-content-end mt-4">
           <div className="w-50">
             <div className="d-flex justify-content-between border-bottom py-2">
@@ -92,7 +92,9 @@ const InvoicePreview = forwardRef(
         <div className="text-center mt-5">
           <p className="fw-bold mb-2">Scan to Pay</p>
           <img src={qrCodeBase64} alt="QR Code" style={{ height: '180px' }} />
-          <p className="text-muted mt-2">Google Pay / PhonePe / Paytm UPI ID: <strong>9146006006@okbizaxis</strong></p>
+          <p className="text-muted mt-2">
+            Google Pay / PhonePe / Paytm UPI ID: <strong>9146006006@okbizaxis</strong>
+          </p>
         </div>
 
         {/* Footer */}
