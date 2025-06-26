@@ -317,7 +317,7 @@ const SalesForm = () => {
     </div>
 
     <div className="mt-4 d-flex flex-wrap gap-3 justify-content-center">
-      <button type="submit" className="btn btn-success px-4 fw-bold">
+      <button type="submit" onClick={handleSubmit} className="btn btn-success px-4 fw-bold">
         💾 Save Sale
       </button>
       <button type="button" onClick={handleGeneratePDF} className="btn btn-outline-primary px-4 fw-bold">
