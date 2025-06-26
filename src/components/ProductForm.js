@@ -46,35 +46,60 @@ const ProductForm = () => {
   };
 
   const generatePDFWithBarcodes = (product) => {
-    const pdf = new jsPDF();
-    pdf.setFontSize(12);
-    let y = 10;
-    let count = 0;
+  const pdf = new jsPDF();
+  const barcodeWidth = 80;
+  const barcodeHeight = 25;
+  const marginX = 20;
+  const marginY = 25;
 
-    for (let i = 0; i < product.quantity; i++) {
-      const canvas = barcodeRefs.current[`${product._id}-${i}`];
-      if (!canvas) continue;
+  const labelsPerRow = 2;
+  const rowsPerPage = 4;
 
-      const imgData = canvas.toDataURL("image/png");
-      pdf.text(`Price: ${product.price}`, 10, y);
+  const startX = 20;
+  const startY = 20;
 
-      if (product.manufacturingDate)
-        pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, 60, y);
-      if (product.expiryDate)
-        pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString('en-IN')}`, 110, y);
+  let x = startX;
+  let y = startY;
+  let count = 0;
 
-      pdf.addImage(imgData, "PNG", 10, y + 5, 100, 25);
-      y += 40;
-      count++;
+  for (let i = 0; i < product.quantity; i++) {
+    const canvas = barcodeRefs.current[`${product._id}-${i}`];
+    if (!canvas) continue;
 
-      if (count % 6 === 0 && i !== product.quantity - 1) {
-        pdf.addPage();
-        y = 10;
-      }
+    const imgData = canvas.toDataURL("image/png");
+
+    // Optional info above barcode
+    pdf.setFontSize(10);
+    pdf.text(`Price: ${product.price}`, x, y);
+    if (product.manufacturingDate)
+      pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, x, y + 5);
+    if (product.expiryDate)
+      pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString('en-IN')}`, x, y + 10);
+
+    pdf.addImage(imgData, "PNG", x, y + 15, barcodeWidth, barcodeHeight);
+
+    count++;
+
+    if (count % labelsPerRow === 0) {
+      // Move to next row
+      x = startX;
+      y += barcodeHeight + marginY + 15;
+    } else {
+      // Next column
+      x += barcodeWidth + marginX;
     }
 
-    pdf.save(`${product.name}_barcodes.pdf`);
-  };
+    // Add new page after 10 labels
+    if (count % (labelsPerRow * rowsPerPage) === 0 && i !== product.quantity - 1) {
+      pdf.addPage();
+      x = startX;
+      y = startY;
+    }
+  }
+
+  pdf.save(`${product.name}_barcodes.pdf`);
+};
+
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
@@ -221,7 +246,7 @@ const ProductForm = () => {
                   </td>
                   <td>
                     <div className="d-flex gap-2">
-                      <button className="btn btn-warning btn-sm" onClick={() => handleEdit(p)}>Edit</button>
+                      <button className="btn btn-sm btn-outline-primary me-2" onClick={() => handleEdit(p)}>Edit</button>
                       <button className="btn btn-outline-danger btn-sm" onClick={() => handleDelete(p._id)}>Delete</button>
                     </div>
                   </td>

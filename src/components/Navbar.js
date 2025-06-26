@@ -1,7 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import '../App.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // This enables toggle functionality
+import '../App.css'; // Your custom styles
 
 const Navbar = () => (
   <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-2">
