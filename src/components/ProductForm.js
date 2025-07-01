@@ -45,15 +45,16 @@ const ProductForm = () => {
     }
   };
 
-  const generatePDFWithBarcodes = (product) => {
+const generatePDFWithBarcodes = (product) => {
   const pdf = new jsPDF();
   const barcodeWidth = 80;
   const barcodeHeight = 25;
-  const marginX = 20;
-  const marginY = 25;
+  const labelHeight = 60;
+  const marginX = 15;
+  const marginY = 10;
 
   const labelsPerRow = 2;
-  const rowsPerPage = 4;
+  const rowsPerPage = 5;
 
   const startX = 20;
   const startY = 20;
@@ -68,28 +69,53 @@ const ProductForm = () => {
 
     const imgData = canvas.toDataURL("image/png");
 
-    // Optional info above barcode
-    pdf.setFontSize(10);
-    pdf.text(`Price: ${product.price}`, x, y);
-    if (product.manufacturingDate)
-      pdf.text(`MFG: ${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, x, y + 5);
-    if (product.expiryDate)
-      pdf.text(`EXP: ${new Date(product.expiryDate).toLocaleDateString('en-IN')}`, x, y + 10);
+    // Product Name
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.text(`Product Name: ${product.name}`, x, y);
 
-    pdf.addImage(imgData, "PNG", x, y + 15, barcodeWidth, barcodeHeight);
+    // Product Info 
+    pdf.setFontSize(9);
+    let textY = y;
+
+    if (product.manufacturingDate) {
+      textY += 5;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("MFG:", x, textY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`${new Date(product.manufacturingDate).toLocaleDateString('en-IN')}`, x + 20, textY);
+    }
+
+    if (product.expiryDate) {
+      textY += 5;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("EXP:", x, textY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`${new Date(product.expiryDate).toLocaleDateString('en-IN')}`, x + 20, textY);
+    }
+
+    if (product.price) {
+      textY += 5;
+      pdf.setFont("helvetica", "bold");
+      pdf.text("MRP:", x, textY);
+      pdf.setFont("helvetica", "normal");
+      pdf.text(`${product.price}`, x + 20, textY);
+    }
+
+    // Barcode
+    pdf.addImage(imgData, "PNG", x, textY + 5, barcodeWidth, barcodeHeight);
 
     count++;
 
+    // Layout positioning
     if (count % labelsPerRow === 0) {
-      // Move to next row
       x = startX;
-      y += barcodeHeight + marginY + 15;
+      y += labelHeight + marginY;
     } else {
-      // Next column
       x += barcodeWidth + marginX;
     }
 
-    // Add new page after 10 labels
+    // New page if full
     if (count % (labelsPerRow * rowsPerPage) === 0 && i !== product.quantity - 1) {
       pdf.addPage();
       x = startX;
@@ -99,7 +125,6 @@ const ProductForm = () => {
 
   pdf.save(`${product.name}_barcodes.pdf`);
 };
-
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
   const handleEditChange = (e) => setEditForm({ ...editForm, [e.target.name]: e.target.value });
