@@ -4,7 +4,6 @@ import {
   FaUserClock,
   FaUserEdit,
   FaBars,
-  FaEnvelope,
   FaTrash,
   FaCheck,
   FaTimes,
@@ -25,6 +24,7 @@ const AdminDashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [pendingVendors, setPendingVendors] = useState([]);
   const [approvedVendors, setApprovedVendors] = useState([]);
+  const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [mobile, setMobile] = useState("");
   const [address, setAddress] = useState("");
@@ -43,9 +43,8 @@ const AdminDashboard = () => {
   const menu = [
     { key: "dashboard", label: "Dashboard", icon: <FaBars /> },
     { key: "add", label: "Add Vendor", icon: <FaUserPlus /> },
-    { key: "pending", label: "Pending Registrations", icon: <FaUserClock /> },
+    { key: "pending", label: "Pending Approvals", icon: <FaUserClock /> },
     { key: "manage", label: "Manage Profiles", icon: <FaUserEdit /> },
-    { key: "contact", label: "Contact Messages", icon: <FaEnvelope /> },
   ];
 
   useEffect(() => {
@@ -54,7 +53,9 @@ const AdminDashboard = () => {
 
   const fetchVendors = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/vendors`);
+      const res = await axios.get(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors`
+      );
       const all = res.data;
       setVendors(all);
       setPendingVendors(all.filter((v) => v.status === "pending"));
@@ -65,35 +66,50 @@ const AdminDashboard = () => {
   };
 
   const handleAddVendor = async (e) => {
-    e.preventDefault();
-    if (!businessName || !mobile || !address || !password) {
-      toast.error("Please fill all fields!");
-      return;
-    }
-    try {
-      setLoading(true);
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors`, {
-        businessName,
-        mobile,
-        address,
-        password,
-      });
-      toast.success("Vendor added successfully!");
-      setBusinessName("");
-      setMobile("");
-      setAddress("");
-      setPassword("");
-      fetchVendors();
-    } catch (error) {
-      toast.error("Failed to add vendor.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  e.preventDefault();
+
+  if (!name || !businessName || !mobile || !address || !password) {
+    toast.error("Please fill all fields!");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors`, {
+      name,
+      businessName,
+      mobile,
+      address,
+      password,
+    });
+
+    toast.success("Vendor added successfully!");
+    console.log("Vendor Added:", response.data);
+
+    // Clear form
+    setName("");
+    setBusinessName("");
+    setMobile("");
+    setAddress("");
+    setPassword("");
+
+    fetchVendors(); // Refresh vendor list
+  } catch (error) {
+    const errorMessage = error.response?.data?.message || "Failed to add vendor.";
+    toast.error(errorMessage);
+    console.error("Error adding vendor:", error.response?.data || error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleApprove = async (id) => {
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`, { status: "approved" });
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`,
+        { status: "approved" }
+      );
       toast.success("Vendor approved!");
       fetchVendors();
     } catch (error) {
@@ -103,7 +119,10 @@ const AdminDashboard = () => {
 
   const handleReject = async (id) => {
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`, { status: "rejected" });
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`,
+        { status: "rejected" }
+      );
       toast.info("Vendor rejected.");
       fetchVendors();
     } catch (error) {
@@ -113,7 +132,9 @@ const AdminDashboard = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`);
+      await axios.delete(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${id}`
+      );
       toast.warning("Vendor deleted.");
       fetchVendors();
     } catch (error) {
@@ -127,12 +148,20 @@ const AdminDashboard = () => {
   };
 
   const saveEdit = async () => {
-    if (!editVendor.businessName || !editVendor.mobile || !editVendor.address) {
+    if (
+      !editVendor.name ||
+      !editVendor.businessName ||
+      !editVendor.mobile ||
+      !editVendor.address
+    ) {
       toast.error("Please fill all fields!");
       return;
     }
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/${editVendor._id}`, editVendor);
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${editVendor._id}`,
+        editVendor
+      );
       toast.success("Vendor updated successfully!");
       setShowEditModal(false);
       fetchVendors();
@@ -153,9 +182,12 @@ const AdminDashboard = () => {
       return;
     }
     try {
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/${editVendor._id}/password`, {
-        password: newPassword,
-      });
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${editVendor._id}/password`,
+        {
+          password: newPassword,
+        }
+      );
       toast.success("Password updated successfully!");
       setShowPasswordModal(false);
     } catch (error) {
@@ -175,8 +207,15 @@ const AdminDashboard = () => {
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Vendor List", 14, 10);
-    const tableColumn = ["Business Name", "Mobile", "Address", "Status"];
+    const tableColumn = [
+      "Name",
+      "Business Name",
+      "Mobile",
+      "Address",
+      "Status",
+    ];
     const tableRows = vendors.map((vendor) => [
+      vendor.name,
       vendor.businessName,
       vendor.mobile,
       vendor.address,
@@ -191,7 +230,7 @@ const AdminDashboard = () => {
   );
 
   return (
-    <div className="d-flex">
+    <div className="d-flex admin-dashboard">
       <ToastContainer />
       {/* Sidebar */}
       <div
@@ -205,9 +244,7 @@ const AdminDashboard = () => {
       >
         <div className="d-flex align-items-center justify-content-between mb-4">
           {!collapsed && (
-            <h5 className="fw-bold text-dark mb-0 d-none d-md-block">
-              Admin Panel
-            </h5>
+            <h5 className="fw-bold text-dark mb-0">Admin Panel</h5>
           )}
           <button
             className="btn btn-sm btn-light border"
@@ -229,9 +266,7 @@ const AdminDashboard = () => {
                   onClick={() => setCurrentSection(item.key)}
                 >
                   <span className="me-2 fs-5">{item.icon}</span>
-                  {!collapsed && (
-                    <span className="text-truncate">{item.label}</span>
-                  )}
+                  {!collapsed && <span>{item.label}</span>}
                 </button>
               </li>
             );
@@ -255,71 +290,94 @@ const AdminDashboard = () => {
         {/* Dashboard Section */}
         {currentSection === "dashboard" && (
           <div>
-            <h3 className="mb-4" style={{ color: "#8B4513" }}>
-              Dashboard Overview
-            </h3>
+            <h3 className="mb-4 text-primary fw-bold">Dashboard Overview</h3>
             <div className="row mb-4">
               <div className="col-md-4 mb-3">
-                <div
-                  className="card text-center shadow"
-                  style={{ borderTop: "5px solid #FFA500" }}
-                >
+                <div className="card shadow text-center border-primary">
                   <div className="card-body">
-                    <h5>Total Vendors</h5>
+                    <h6>Total Vendors</h6>
                     <h3>{vendors.length}</h3>
                   </div>
                 </div>
               </div>
               <div className="col-md-4 mb-3">
-                <div
-                  className="card text-center shadow"
-                  style={{ borderTop: "5px solid #FFA500" }}
-                >
+                <div className="card shadow text-center border-warning">
                   <div className="card-body">
-                    <h5>Pending Approvals</h5>
+                    <h6>Pending Approvals</h6>
                     <h3>{pendingVendors.length}</h3>
                   </div>
                 </div>
               </div>
               <div className="col-md-4 mb-3">
-                <div
-                  className="card text-center shadow"
-                  style={{ borderTop: "5px solid #FFA500" }}
-                >
+                <div className="card shadow text-center border-success">
                   <div className="card-body">
-                    <h5>Approved Vendors</h5>
+                    <h6>Approved Vendors</h6>
                     <h3>{approvedVendors.length}</h3>
                   </div>
                 </div>
               </div>
             </div>
+
+            {/* Recent Activities */}
+            {/* <div className="card shadow p-3">
+              <h5 className="mb-3">Recent Activities</h5>
+              <ul className="mb-0">
+                <li>Approved Vendor ABC</li>
+                <li>Rejected Vendor XYZ</li>
+                <li>Added new vendor DEF</li>
+              </ul>
+            </div> */}
           </div>
         )}
 
         {/* Add Vendor */}
         {currentSection === "add" && (
           <div className="card shadow p-4">
-            <h4 style={{ color: "#8B4513" }}>Add New Vendor</h4>
+            <h4 className="text-primary mb-3">Add New Vendor</h4>
             <form onSubmit={handleAddVendor}>
-              <div className="mb-3">
-                <label className="form-label">Business Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={businessName}
-                  onChange={(e) => setBusinessName(e.target.value)}
-                  placeholder="Enter business name"
-                />
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Enter name"
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Business Name</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Enter business name"
+                  />
+                </div>
               </div>
-              <div className="mb-3">
-                <label className="form-label">Mobile Number</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={mobile}
-                  onChange={(e) => setMobile(e.target.value)}
-                  placeholder="Enter mobile number"
-                />
+              <div className="row">
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Mobile Number</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={mobile}
+                    onChange={(e) => setMobile(e.target.value)}
+                    placeholder="Enter mobile number"
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
+                  <label className="form-label">Password</label>
+                  <input
+                    type="password"
+                    className="form-control"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Enter password"
+                  />
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label">Address</label>
@@ -330,18 +388,8 @@ const AdminDashboard = () => {
                   placeholder="Enter address"
                 ></textarea>
               </div>
-              <div className="mb-3">
-                <label className="form-label">Password</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter password"
-                />
-              </div>
               <button
-                className="btn btn-warning"
+                className="btn btn-success"
                 type="submit"
                 disabled={loading}
               >
@@ -351,13 +399,14 @@ const AdminDashboard = () => {
           </div>
         )}
 
-        {/* Pending Registrations */}
+        {/* Pending Approvals */}
         {currentSection === "pending" && (
           <div className="card shadow p-4">
-            <h4 style={{ color: "#8B4513" }}>Pending Registrations</h4>
-            <table className="table table-bordered mt-3">
-              <thead>
+            <h4 className="text-warning mb-3">Pending Approvals</h4>
+            <table className="table table-bordered table-hover mt-3">
+              <thead className="table-dark">
                 <tr>
+                  <th>Name</th>
                   <th>Business Name</th>
                   <th>Mobile</th>
                   <th>Address</th>
@@ -365,27 +414,36 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {pendingVendors.map((vendor) => (
-                  <tr key={vendor._id}>
-                    <td>{vendor.businessName}</td>
-                    <td>{vendor.mobile}</td>
-                    <td>{vendor.address}</td>
-                    <td>
-                      <button
-                        className="btn btn-success btn-sm me-2"
-                        onClick={() => handleApprove(vendor._id)}
-                      >
-                        <FaCheck />
-                      </button>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleReject(vendor._id)}
-                      >
-                        <FaTimes />
-                      </button>
+                {pendingVendors.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center text-muted">
+                      No pending vendors.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  pendingVendors.map((vendor) => (
+                    <tr key={vendor._id}>
+                      <td>{vendor.name}</td>
+                      <td>{vendor.businessName}</td>
+                      <td>{vendor.mobile}</td>
+                      <td>{vendor.address}</td>
+                      <td>
+                        <button
+                          className="btn btn-success btn-sm me-2"
+                          onClick={() => handleApprove(vendor._id)}
+                        >
+                          <FaCheck />
+                        </button>
+                        <button
+                          className="btn btn-danger btn-sm"
+                          onClick={() => handleReject(vendor._id)}
+                        >
+                          <FaTimes />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -394,7 +452,7 @@ const AdminDashboard = () => {
         {/* Manage Profiles */}
         {currentSection === "manage" && (
           <div className="card shadow p-4">
-            <h4 style={{ color: "#8B4513" }}>Manage Vendor Profiles</h4>
+            <h4 className="text-primary mb-3">Manage Vendor Profiles</h4>
             <div className="d-flex justify-content-between mb-3">
               <input
                 type="text"
@@ -410,14 +468,18 @@ const AdminDashboard = () => {
                 >
                   <FaDownload /> Excel
                 </button>
-                <button className="btn btn-outline-danger" onClick={exportToPDF}>
+                <button
+                  className="btn btn-outline-danger"
+                  onClick={exportToPDF}
+                >
                   <FaDownload /> PDF
                 </button>
               </div>
             </div>
-            <table className="table table-bordered mt-3">
-              <thead>
+            <table className="table table-bordered table-hover">
+              <thead className="table-dark">
                 <tr>
+                  <th>Name</th>
                   <th>Business Name</th>
                   <th>Mobile</th>
                   <th>Address</th>
@@ -426,44 +488,45 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {filteredVendors.map((vendor) => (
-                  <tr key={vendor._id}>
-                    <td>{vendor.businessName}</td>
-                    <td>{vendor.mobile}</td>
-                    <td>{vendor.address}</td>
-                    <td>{vendor.status}</td>
-                    <td>
-                      <button
-                        className="btn btn-sm btn-info me-2"
-                        onClick={() => handleEdit(vendor)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="btn btn-sm btn-warning me-2"
-                        onClick={() => handleChangePassword(vendor)}
-                      >
-                        Change Password
-                      </button>
-                      <button
-                        className="btn btn-sm btn-danger"
-                        onClick={() => handleDelete(vendor._id)}
-                      >
-                        <FaTrash />
-                      </button>
+                {filteredVendors.length === 0 ? (
+                  <tr>
+                    <td colSpan="6" className="text-center text-muted">
+                      No vendors found.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  filteredVendors.map((vendor) => (
+                    <tr key={vendor._id}>
+                      <td>{vendor.name}</td>
+                      <td>{vendor.businessName}</td>
+                      <td>{vendor.mobile}</td>
+                      <td>{vendor.address}</td>
+                      <td>{vendor.status}</td>
+                      <td>
+                        <button
+                          className="btn btn-sm btn-info me-2"
+                          onClick={() => handleEdit(vendor)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="btn btn-sm btn-warning me-2"
+                          onClick={() => handleChangePassword(vendor)}
+                        >
+                          Change Password
+                        </button>
+                        <button
+                          className="btn btn-sm btn-danger"
+                          onClick={() => handleDelete(vendor._id)}
+                        >
+                          <FaTrash />
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
-          </div>
-        )}
-
-        {/* Contact Messages */}
-        {currentSection === "contact" && (
-          <div className="card shadow p-4">
-            <h4 style={{ color: "#8B4513" }}>Contact Messages</h4>
-            <p>Feature coming soon...</p>
           </div>
         )}
       </div>
@@ -476,38 +539,41 @@ const AdminDashboard = () => {
         <Modal.Body>
           {editVendor && (
             <>
-              <div className="mb-3">
-                <label className="form-label">Business Name</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={editVendor.businessName}
-                  onChange={(e) =>
-                    setEditVendor({ ...editVendor, businessName: e.target.value })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Mobile</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={editVendor.mobile}
-                  onChange={(e) =>
-                    setEditVendor({ ...editVendor, mobile: e.target.value })
-                  }
-                />
-              </div>
-              <div className="mb-3">
-                <label className="form-label">Address</label>
-                <textarea
-                  className="form-control"
-                  value={editVendor.address}
-                  onChange={(e) =>
-                    setEditVendor({ ...editVendor, address: e.target.value })
-                  }
-                ></textarea>
-              </div>
+              <input
+                type="text"
+                className="form-control mb-2"
+                value={editVendor.name}
+                onChange={(e) =>
+                  setEditVendor({ ...editVendor, name: e.target.value })
+                }
+                placeholder="Name"
+              />
+              <input
+                type="text"
+                className="form-control mb-2"
+                value={editVendor.businessName}
+                onChange={(e) =>
+                  setEditVendor({ ...editVendor, businessName: e.target.value })
+                }
+                placeholder="Business Name"
+              />
+              <input
+                type="text"
+                className="form-control mb-2"
+                value={editVendor.mobile}
+                onChange={(e) =>
+                  setEditVendor({ ...editVendor, mobile: e.target.value })
+                }
+                placeholder="Mobile"
+              />
+              <textarea
+                className="form-control mb-2"
+                value={editVendor.address}
+                onChange={(e) =>
+                  setEditVendor({ ...editVendor, address: e.target.value })
+                }
+                placeholder="Address"
+              ></textarea>
             </>
           )}
         </Modal.Body>
@@ -522,7 +588,10 @@ const AdminDashboard = () => {
       </Modal>
 
       {/* Change Password Modal */}
-      <Modal show={showPasswordModal} onHide={() => setShowPasswordModal(false)}>
+      <Modal
+        show={showPasswordModal}
+        onHide={() => setShowPasswordModal(false)}
+      >
         <Modal.Header closeButton>
           <Modal.Title>Change Password</Modal.Title>
         </Modal.Header>
@@ -530,17 +599,20 @@ const AdminDashboard = () => {
           <input
             type="password"
             className="form-control"
-            placeholder="Enter new password"
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Enter new password"
           />
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowPasswordModal(false)}>
-            Cancel
+          <Button
+            variant="secondary"
+            onClick={() => setShowPasswordModal(false)}
+          >
+            Close
           </Button>
           <Button variant="primary" onClick={savePassword}>
-            Update Password
+            Save
           </Button>
         </Modal.Footer>
       </Modal>
