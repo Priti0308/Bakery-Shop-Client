@@ -27,6 +27,7 @@ const AdminDashboard = () => {
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [password, setPassword] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,43 +67,51 @@ const AdminDashboard = () => {
   };
 
   const handleAddVendor = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!name || !businessName || !mobile || !address || !password) {
-    toast.error("Please fill all fields!");
-    return;
-  }
+    if (!name || !businessName || !mobile || !email  || !address || !password) {
+      toast.error("Please fill all fields!");
+      return;
+    }
 
-  try {
-    setLoading(true);
-    const response = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors`, {
-      name,
-      businessName,
-      mobile,
-      address,
-      password,
-    });
+    try {
+      setLoading(true);
+      const response = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors`,
+        {
+          name,
+          businessName,
+          mobile,
+          email,
+          address,
+          password,
+        }
+      );
 
-    toast.success("Vendor added successfully!");
-    console.log("Vendor Added:", response.data);
+      toast.success("Vendor added successfully!");
+      console.log("Vendor Added:", response.data);
 
-    // Clear form
-    setName("");
-    setBusinessName("");
-    setMobile("");
-    setAddress("");
-    setPassword("");
+      // Clear form
+      setName("");
+      setBusinessName("");
+      setEmail("");
+      setMobile("");
+      setAddress("");
+      setPassword("");
 
-    fetchVendors(); // Refresh vendor list
-  } catch (error) {
-    const errorMessage = error.response?.data?.message || "Failed to add vendor.";
-    toast.error(errorMessage);
-    console.error("Error adding vendor:", error.response?.data || error.message);
-  } finally {
-    setLoading(false);
-  }
-};
-
+      fetchVendors(); // Refresh vendor list
+    } catch (error) {
+      const errorMessage =
+        error.response?.data?.message || "Failed to add vendor.";
+      toast.error(errorMessage);
+      // console.error(
+      //   "Error adding vendor:",
+      //   error.response?.data || error.message
+      // );
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleApprove = async (id) => {
     try {
@@ -152,6 +161,7 @@ const AdminDashboard = () => {
       !editVendor.name ||
       !editVendor.businessName ||
       !editVendor.mobile ||
+      !editVendor.email ||
       !editVendor.address
     ) {
       toast.error("Please fill all fields!");
@@ -211,6 +221,7 @@ const AdminDashboard = () => {
       "Name",
       "Business Name",
       "Mobile",
+      "Email",
       "Address",
       "Status",
     ];
@@ -218,6 +229,7 @@ const AdminDashboard = () => {
       vendor.name,
       vendor.businessName,
       vendor.mobile,
+      vendor.email,
       vendor.address,
       vendor.status,
     ]);
@@ -317,16 +329,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
             </div>
-
-            {/* Recent Activities */}
-            {/* <div className="card shadow p-3">
-              <h5 className="mb-3">Recent Activities</h5>
-              <ul className="mb-0">
-                <li>Approved Vendor ABC</li>
-                <li>Rejected Vendor XYZ</li>
-                <li>Added new vendor DEF</li>
-              </ul>
-            </div> */}
           </div>
         )}
 
@@ -357,6 +359,7 @@ const AdminDashboard = () => {
                   />
                 </div>
               </div>
+              
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">Mobile Number</label>
@@ -369,6 +372,17 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div className="col-md-6 mb-3">
+                  <label className="form-label">Email</label>
+                  <input
+                    type="email"
+                    className="form-control"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter  email"
+                    required
+                  />
+                </div>
+                <div className="col-md-6 mb-3">
                   <label className="form-label">Password</label>
                   <input
                     type="password"
@@ -378,8 +392,7 @@ const AdminDashboard = () => {
                     placeholder="Enter password"
                   />
                 </div>
-              </div>
-              <div className="mb-3">
+                <div className="col-md-6 mb-3">
                 <label className="form-label">Address</label>
                 <textarea
                   className="form-control"
@@ -388,6 +401,8 @@ const AdminDashboard = () => {
                   placeholder="Enter address"
                 ></textarea>
               </div>
+              </div>
+              
               <button
                 className="btn btn-success"
                 type="submit"

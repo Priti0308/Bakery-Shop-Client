@@ -16,7 +16,7 @@ const Home = () => {
       navigate("/admin/dashboard");
     } else {
       // Add validation if needed
-      navigate("/vendor/dashboard");
+      navigate("dashboard");
     }
   };
 
