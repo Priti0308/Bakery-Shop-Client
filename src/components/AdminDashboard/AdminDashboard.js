@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
 import {
+  FaUsers,
+  FaClock,
+  FaCheckCircle,
+  FaTimesCircle,
   FaUserPlus,
   FaUserClock,
   FaUserEdit,
@@ -24,6 +28,7 @@ const AdminDashboard = () => {
   const [vendors, setVendors] = useState([]);
   const [pendingVendors, setPendingVendors] = useState([]);
   const [approvedVendors, setApprovedVendors] = useState([]);
+  const [rejectedVendors, setRejectedVendors] = useState([]);
   const [name, setName] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [mobile, setMobile] = useState("");
@@ -61,6 +66,7 @@ const AdminDashboard = () => {
       setVendors(all);
       setPendingVendors(all.filter((v) => v.status === "pending"));
       setApprovedVendors(all.filter((v) => v.status === "approved"));
+      setRejectedVendors(all.filter((v) => v.status === "rejected"));
     } catch (error) {
       console.error(error);
     }
@@ -211,36 +217,35 @@ const AdminDashboard = () => {
 
   // Export to PDF
   const exportToPDF = () => {
-  const doc = new jsPDF();
-  doc.text("Vendor List", 14, 10);
+    const doc = new jsPDF();
+    doc.text("Vendor List", 14, 10);
 
-  const tableColumn = [
-    "Name",
-    "Business Name",
-    "Mobile",
-    "Email",
-    "Address",
-    "Status",
-  ];
+    const tableColumn = [
+      "Name",
+      "Business Name",
+      "Mobile",
+      "Email",
+      "Address",
+      "Status",
+    ];
 
-  const tableRows = vendors.map((vendor) => [
-    vendor.name,
-    vendor.businessName,
-    vendor.mobile,
-    vendor.email,
-    vendor.address,
-    vendor.status,
-  ]);
+    const tableRows = vendors.map((vendor) => [
+      vendor.name,
+      vendor.businessName,
+      vendor.mobile,
+      vendor.email,
+      vendor.address,
+      vendor.status,
+    ]);
 
-  
-  autoTable(doc, {
-    head: [tableColumn],
-    body: tableRows,
-    startY: 20,
-  });
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    });
 
-  doc.save("vendors.pdf");
-};
+    doc.save("vendors.pdf");
+  };
 
   const filteredVendors = vendors.filter((vendor) =>
     vendor.businessName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -309,38 +314,90 @@ const AdminDashboard = () => {
           <div>
             <h3 className="mb-4 text-dark fw-bold">Dashboard Overview</h3>
             <div className="row mb-4">
-              <div className="col-md-4 mb-3">
-                <div className="card shadow text-center border-primary">
-                  <div className="card-body">
-                    <h6>Total Vendors</h6>
-                    <h3>{vendors.length}</h3>
+              {/* Total Vendors */}
+              <div className="col-md-3 mb-3">
+                <div className="card shadow-lg text-center border-0 rounded-4 h-100">
+                  <div className="card-body p-4">
+                    <div
+                      className="bg-primary bg-opacity-25 text-primary d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                      style={{ width: "70px", height: "70px" }}
+                    >
+                      <FaUsers size={30} />
+                    </div>
+                    <h6 className="fw-semibold text-secondary">
+                      Total Vendors
+                    </h6>
+                    <h2 className="fw-bold text-dark">{vendors.length}</h2>
                   </div>
                 </div>
               </div>
-              <div className="col-md-4 mb-3">
-                <div className="card shadow text-center border-warning">
-                  <div className="card-body">
-                    <h6>Pending Approvals</h6>
-                    <h3>{pendingVendors.length}</h3>
+
+              {/* Pending Approvals */}
+              <div className="col-md-3 mb-3">
+                <div className="card shadow-lg text-center border-0 rounded-4 h-100">
+                  <div className="card-body p-4">
+                    <div
+                      className="bg-warning bg-opacity-25 text-warning d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                      style={{ width: "70px", height: "70px" }}
+                    >
+                      <FaClock size={30} />
+                    </div>
+                    <h6 className="fw-semibold text-secondary">
+                      Pending Approvals
+                    </h6>
+                    <h2 className="fw-bold text-dark">
+                      {pendingVendors.length}
+                    </h2>
                   </div>
                 </div>
               </div>
-              <div className="col-md-4 mb-3">
-                <div className="card shadow text-center border-success">
-                  <div className="card-body">
-                    <h6>Approved Vendors</h6>
-                    <h3>{approvedVendors.length}</h3>
+
+              {/* Approved Vendors */}
+              <div className="col-md-3 mb-3">
+                <div className="card shadow-lg text-center border-0 rounded-4 h-100">
+                  <div className="card-body p-4">
+                    <div
+                      className="bg-success bg-opacity-25 text-success d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                      style={{ width: "70px", height: "70px" }}
+                    >
+                      <FaCheckCircle size={30} />
+                    </div>
+                    <h6 className="fw-semibold text-secondary">
+                      Approved Vendors
+                    </h6>
+                    <h2 className="fw-bold text-dark">
+                      {approvedVendors.length}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+
+              {/* Rejected Vendors */}
+              <div className="col-md-3 mb-3">
+                <div className="card shadow-lg text-center border-0 rounded-4 h-100">
+                  <div className="card-body p-4">
+                    <div
+                      className="bg-danger bg-opacity-25 text-danger d-inline-flex align-items-center justify-content-center rounded-circle mb-3"
+                      style={{ width: "70px", height: "70px" }}
+                    >
+                      <FaTimesCircle size={30} />
+                    </div>
+                    <h6 className="fw-semibold text-secondary">
+                      Rejected Vendors
+                    </h6>
+                    <h2 className="fw-bold text-dark">
+                      {rejectedVendors.length}
+                    </h2>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         )}
-
         {/* Add Vendor */}
         {currentSection === "add" && (
           <div className="card shadow p-4">
-            <h4 className="text-primary mb-3">Add New Vendor</h4>
+            <h4 className="text-dark mb-3">Add New Vendor</h4>
             <form onSubmit={handleAddVendor}>
               <div className="row">
                 <div className="col-md-6 mb-3">
@@ -418,17 +475,17 @@ const AdminDashboard = () => {
             </form>
           </div>
         )}
-
         {/* Pending Approvals */}
         {currentSection === "pending" && (
           <div className="card shadow p-4">
-            <h4 className="text-warning mb-3">Pending Approvals</h4>
+            <h4 className="text-dark mb-3">Pending Approvals</h4>
             <table className="table table-bordered table-hover mt-3">
               <thead className="table-dark">
                 <tr>
                   <th>Name</th>
                   <th>Business Name</th>
                   <th>Mobile</th>
+                  <th>Email</th>
                   <th>Address</th>
                   <th>Actions</th>
                 </tr>
@@ -446,6 +503,7 @@ const AdminDashboard = () => {
                       <td>{vendor.name}</td>
                       <td>{vendor.businessName}</td>
                       <td>{vendor.mobile}</td>
+                      <td>{vendor.email}</td>
                       <td>{vendor.address}</td>
                       <td>
                         <button
@@ -468,11 +526,10 @@ const AdminDashboard = () => {
             </table>
           </div>
         )}
-
         {/* Manage Profiles */}
         {currentSection === "manage" && (
           <div className="card shadow p-4">
-            <h4 className="text-primary mb-3">Manage Vendor Profiles</h4>
+            <h4 className="text-dark mb-3">Manage Vendor Profiles</h4>
             <div className="d-flex justify-content-between mb-3">
               <input
                 type="text"
