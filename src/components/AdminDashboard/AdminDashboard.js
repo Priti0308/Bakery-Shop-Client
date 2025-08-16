@@ -16,7 +16,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const AdminDashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -69,7 +69,7 @@ const AdminDashboard = () => {
   const handleAddVendor = async (e) => {
     e.preventDefault();
 
-    if (!name || !businessName || !mobile || !email  || !address || !password) {
+    if (!name || !businessName || !mobile || !email || !address || !password) {
       toast.error("Please fill all fields!");
       return;
     }
@@ -104,10 +104,6 @@ const AdminDashboard = () => {
       const errorMessage =
         error.response?.data?.message || "Failed to add vendor.";
       toast.error(errorMessage);
-      // console.error(
-      //   "Error adding vendor:",
-      //   error.response?.data || error.message
-      // );
     } finally {
       setLoading(false);
     }
@@ -215,27 +211,36 @@ const AdminDashboard = () => {
 
   // Export to PDF
   const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Vendor List", 14, 10);
-    const tableColumn = [
-      "Name",
-      "Business Name",
-      "Mobile",
-      "Email",
-      "Address",
-      "Status",
-    ];
-    const tableRows = vendors.map((vendor) => [
-      vendor.name,
-      vendor.businessName,
-      vendor.mobile,
-      vendor.email,
-      vendor.address,
-      vendor.status,
-    ]);
-    doc.autoTable(tableColumn, tableRows, { startY: 20 });
-    doc.save("vendors.pdf");
-  };
+  const doc = new jsPDF();
+  doc.text("Vendor List", 14, 10);
+
+  const tableColumn = [
+    "Name",
+    "Business Name",
+    "Mobile",
+    "Email",
+    "Address",
+    "Status",
+  ];
+
+  const tableRows = vendors.map((vendor) => [
+    vendor.name,
+    vendor.businessName,
+    vendor.mobile,
+    vendor.email,
+    vendor.address,
+    vendor.status,
+  ]);
+
+  
+  autoTable(doc, {
+    head: [tableColumn],
+    body: tableRows,
+    startY: 20,
+  });
+
+  doc.save("vendors.pdf");
+};
 
   const filteredVendors = vendors.filter((vendor) =>
     vendor.businessName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -302,7 +307,7 @@ const AdminDashboard = () => {
         {/* Dashboard Section */}
         {currentSection === "dashboard" && (
           <div>
-            <h3 className="mb-4 text-primary fw-bold">Dashboard Overview</h3>
+            <h3 className="mb-4 text-dark fw-bold">Dashboard Overview</h3>
             <div className="row mb-4">
               <div className="col-md-4 mb-3">
                 <div className="card shadow text-center border-primary">
@@ -359,7 +364,7 @@ const AdminDashboard = () => {
                   />
                 </div>
               </div>
-              
+
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label className="form-label">Mobile Number</label>
@@ -393,16 +398,16 @@ const AdminDashboard = () => {
                   />
                 </div>
                 <div className="col-md-6 mb-3">
-                <label className="form-label">Address</label>
-                <textarea
-                  className="form-control"
-                  value={address}
-                  onChange={(e) => setAddress(e.target.value)}
-                  placeholder="Enter address"
-                ></textarea>
+                  <label className="form-label">Address</label>
+                  <textarea
+                    className="form-control"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Enter address"
+                  ></textarea>
+                </div>
               </div>
-              </div>
-              
+
               <button
                 className="btn btn-success"
                 type="submit"
@@ -498,6 +503,7 @@ const AdminDashboard = () => {
                   <th>Business Name</th>
                   <th>Mobile</th>
                   <th>Address</th>
+                  <th>Email</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
@@ -516,6 +522,7 @@ const AdminDashboard = () => {
                       <td>{vendor.businessName}</td>
                       <td>{vendor.mobile}</td>
                       <td>{vendor.address}</td>
+                      <td>{vendor.email}</td>
                       <td>{vendor.status}</td>
                       <td>
                         <button
@@ -580,6 +587,15 @@ const AdminDashboard = () => {
                   setEditVendor({ ...editVendor, mobile: e.target.value })
                 }
                 placeholder="Mobile"
+              />
+              <input
+                type="text"
+                className="form-control mb-2"
+                value={editVendor.email}
+                onChange={(e) =>
+                  setEditVendor({ ...editVendor, email: e.target.value })
+                }
+                placeholder="Email"
               />
               <textarea
                 className="form-control mb-2"

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 // import logo from "./public/favicon.ico";
 
 const Home = () => {
@@ -9,14 +10,38 @@ const Home = () => {
   const [number, setNumber] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (role === "admin") {
       // Add validation if needed
       navigate("/admin/dashboard");
     } else {
-      // Add validation if needed
-      navigate("dashboard");
+      try {
+        // Call backend for vendor login
+        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors`, {
+          mobile: number,
+          password
+        });
+        console.log("Login response:", res.data); // Debug log
+        // Support both {vendor, token} and {token, ...vendorFields}
+        if (res.data.vendor && res.data.token) {
+          localStorage.setItem("vendor", JSON.stringify(res.data.vendor));
+          localStorage.setItem("vendorToken", res.data.token);
+        } else if (res.data.token) {
+          // Assume all other fields are vendor fields
+          const { token, ...vendorFields } = res.data;
+          localStorage.setItem("vendor", JSON.stringify(vendorFields));
+          localStorage.setItem("vendorToken", token);
+        } else {
+          // fallback: store everything
+          localStorage.setItem("vendor", JSON.stringify(res.data));
+        }
+        navigate("/vendor/dashboard");
+      } catch (error) {
+        alert(
+          error.response?.data?.message || "Vendor login failed. Please check your credentials."
+        );
+      }
     }
   };
 
