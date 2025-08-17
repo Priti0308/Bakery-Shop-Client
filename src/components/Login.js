@@ -50,7 +50,7 @@ const Home = () => {
       <div className="card shadow-lg p-4" style={{ maxWidth: "400px", width: "100%" }}>
         <div className="text-center mb-3">
           {/* <img src={logo} alt="Logo" style={{ width: "80px" }} /> */}
-          <h3 className="mt-2">🍩 इंद्रायणी स्वीट्स अँड बेकर्स</h3>
+          <h3 className="mt-2">Login</h3>
         </div>
 
         <form onSubmit={handleLogin}>

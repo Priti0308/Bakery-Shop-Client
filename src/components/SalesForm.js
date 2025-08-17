@@ -24,8 +24,13 @@ const SalesForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res1 = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
-        const res2 = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`);
+        const token = localStorage.getItem("vendorToken");
+        const res1 = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const res2 = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         setProducts(res1.data);
         setCustomers(res2.data);
       } catch (err) {
@@ -70,7 +75,6 @@ const SalesForm = () => {
 
     try {
       let finalCustomerId = customerId;
-
       if (!finalCustomerId) {
         const newCustomer = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, {
           name: newCustomerName.trim(),
@@ -79,12 +83,17 @@ const SalesForm = () => {
         });
         finalCustomerId = newCustomer.data._id;
       }
-
-      const saleRes = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/sales`, {
-        customer: finalCustomerId,
-        items: saleItems
-      });
-
+      const token = localStorage.getItem("vendorToken");
+      const saleRes = await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/sales`,
+        {
+          customer: finalCustomerId,
+          items: saleItems
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
       setSavedSaleId(saleRes.data._id);
       setShowModal(true);
       toast.success("Sale saved successfully!");

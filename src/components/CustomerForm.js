@@ -10,7 +10,10 @@ const CustomerForm = () => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`);
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setCustomers(res.data);
     } catch (err) {
       console.error('Error fetching customers:', err);
@@ -25,11 +28,20 @@ const CustomerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const token = localStorage.getItem("vendorToken");
       if (editingId) {
-        await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/customers/${editingId}`, form);
+        await axios.put(
+          `${process.env.REACT_APP_BACKEND_URL}/api/customers/${editingId}`,
+          form,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         toast.success('Customer updated');
       } else {
-        await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, form);
+        await axios.post(
+          `${process.env.REACT_APP_BACKEND_URL}/api/customers`,
+          form,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
         toast.success('Customer added');
       }
       setForm({ name: '', address: '', contact: '' });

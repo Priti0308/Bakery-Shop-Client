@@ -12,8 +12,13 @@ const Reports = () => {
     setLoading(true);
     setError('');
     try {
-      const daily = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/reports/daily`);
-      const monthly = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/reports/monthly`);
+      const token = localStorage.getItem("vendorToken");
+      const daily = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/reports/daily`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const monthly = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/reports/monthly`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setDailyReport(daily.data);
       setMonthlyReport(monthly.data);
     } catch (err) {

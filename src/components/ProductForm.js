@@ -19,7 +19,10 @@ const ProductForm = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setProducts(res.data);
       setTimeout(() => {
         res.data.forEach((p) => generateBarcodes(p._id, p.quantity));
@@ -135,12 +138,19 @@ const generatePDFWithBarcodes = (product) => {
     if (!name.trim() || quantity <= 0 || price <= 0) return;
 
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/products`, {
-        ...form,
-        name: name.trim(),
-        quantity: Number(quantity),
-        price: Number(price),
-      });
+      const token = localStorage.getItem("vendorToken");
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND_URL}/api/products`,
+        {
+          ...form,
+          name: name.trim(),
+          quantity: Number(quantity),
+          price: Number(price),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
       setForm({ name: '', quantity: '', price: '', weight: '', expiryDate: '', manufacturingDate: '' });
       fetchProducts();
       toast.success('Product added successfully');

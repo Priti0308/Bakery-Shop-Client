@@ -21,7 +21,10 @@ const Ledger = () => {
  
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`);
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/products`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setProducts(res.data);
     } catch (err) {
       console.error('Error fetching products:', err);
@@ -61,7 +64,10 @@ const Ledger = () => {
   const fetchLedger = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`);
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       const allLedgers = res.data.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setLedgerData(allLedgers);
       setFilteredData(groupByCustomer(allLedgers));
@@ -75,7 +81,10 @@ const Ledger = () => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`);
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/api/customers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       setCustomers(res.data);
     } catch (err) {
       console.error('Error fetching customers:', err);
@@ -125,18 +134,30 @@ const handleAddLedger = async () => {
       const updatedProducts = [...new Set([...existingLedger.products.map(p => p.name), ...productNames])]; 
 
       
-      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${existingLedger._id}`, {
-      total: updatedTotal,
-      products: updatedProducts,
-});
+      const token = localStorage.getItem("vendorToken");
+      await axios.put(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${existingLedger._id}`,
+        {
+          total: updatedTotal,
+          products: updatedProducts,
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
     } else {
      
-      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`, {
-        customer: newCustomerId,
-        products: productNames,
-        total: parseFloat(newTotal),
-      });
+      const token = localStorage.getItem("vendorToken");
+      await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/ledger`,
+        {
+          customer: newCustomerId,
+          products: productNames,
+          total: parseFloat(newTotal),
+        },
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
 
     }
 
@@ -153,7 +174,10 @@ const handleAddLedger = async () => {
 
   const markAsPaid = async (id) => {
     try {
-      const res = await axios.patch('/api/ledger/${id}/pay');
+      const token = localStorage.getItem("vendorToken");
+      const res = await axios.patch(`/api/ledger/${id}/pay`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.data.message === 'Ledger marked as paid') {
         fetchLedger();
       } else {
@@ -205,9 +229,15 @@ const handlePartialPay = async (id) => {
     return toast.warning('Please enter a valid amount');
   }
   try {
-    const res = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${id}/partial-pay`, {
-      amount: parseFloat(amount),
-    });
+    const token = localStorage.getItem("vendorToken");
+    const res = await axios.patch(`${process.env.REACT_APP_BACKEND_URL}/api/ledger/${id}/partial-pay`,
+      {
+        amount: parseFloat(amount),
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
     res.data.success ? toast.success('Partial payment updated') : toast.error(res.data.message);
     fetchLedger();
   } catch (err) {
