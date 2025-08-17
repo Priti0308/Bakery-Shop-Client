@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { Card, Button, Form, Spinner, Container, Row, Col } from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const VendorDashboard = () => {
   const [vendor, setVendor] = useState(null);
@@ -12,6 +15,7 @@ const VendorDashboard = () => {
     businessName: "",
     address: "",
   });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const vendorData = localStorage.getItem("vendor");
@@ -28,96 +32,172 @@ const VendorDashboard = () => {
 
   const handleSave = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("vendorToken");
 
       const res = await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${vendor._id}`,
         formData,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      setVendor(res.data);
-      localStorage.setItem("vendor", JSON.stringify(res.data));
+      setVendor(res.data.vendor); 
+      localStorage.setItem("vendor", JSON.stringify(res.data.vendor));
       setEditMode(false);
-      alert("Profile updated successfully!");
+      toast.success("Profile updated successfully!");
     } catch (error) {
       console.error(error);
-      alert("Failed to update profile.");
+      toast.error("Failed to update profile.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  if (!vendor) {  
+  if (!vendor) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-lg">Loading...</p>
+      <div className="d-flex justify-content-center align-items-center vh-100">
+        <Spinner animation="border" />
+        <span className="ms-2">Loading...</span>
       </div>
     );
   }
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="bg-white shadow-lg rounded-2xl p-8 w-full max-w-lg">
-        <h1 className="text-2xl font-bold text-center mb-6">Business Profile</h1>
+    <Container className="py-5">
+      <ToastContainer />
+      <Row className="justify-content-center">
+        <Col md={8}>
+          <Card className="shadow-lg border-0 rounded-4">
+            <Card.Body className="p-4">
+              <h3 className="text-center fw-bold mb-4 text-primary">
+                Business Profile
+              </h3>
 
-        <div className="space-y-4">
-          {["name", "mobile", "email", "businessName", "address"].map((field) => (
-            <div key={field}>
-              <p className="text-sm text-gray-500 capitalize">{field}</p>
-              {editMode ? (
-                <input
-                  type="text"
-                  name={field}
-                  value={formData[field]}
-                  onChange={handleChange}
-                  className="w-full border rounded p-2 mt-1"
-                />
-              ) : (
-                <p className="text-lg font-medium">{vendor[field]}</p>
-              )}
-            </div>
-          ))}
-        </div>
+              {/* Profile fields */}
+              <Form>
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Name</Form.Label>
+                      {editMode ? (
+                        <Form.Control
+                          type="text"
+                          name="name"
+                          value={formData.name}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        <p className="fw-semibold">{vendor.name}</p>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Business Name</Form.Label>
+                      {editMode ? (
+                        <Form.Control
+                          type="text"
+                          name="businessName"
+                          value={formData.businessName}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        <p className="fw-semibold">{vendor.businessName}</p>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-        {/* Action buttons */}
-        <div className="mt-8 flex justify-between">
-          {editMode ? (
-            <>
-              <button
-                onClick={handleSave}
-                className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition"
-              >
-                Save
-              </button>
-              <button
-                onClick={() => {
-                  setEditMode(false);
-                  setFormData(vendor); // reset
-                }}
-                className="px-6 py-2 bg-gray-400 text-white rounded-lg hover:bg-gray-500 transition"
-              >
-                Cancel
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setEditMode(true)}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            >
-              Edit Profile
-            </button>
-          )}
+                <Row className="mb-3">
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Mobile</Form.Label>
+                      {editMode ? (
+                        <Form.Control
+                          type="text"
+                          name="mobile"
+                          value={formData.mobile}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        <p className="fw-semibold">{vendor.mobile}</p>
+                      )}
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group>
+                      <Form.Label>Email</Form.Label>
+                      {editMode ? (
+                        <Form.Control
+                          type="email"
+                          name="email"
+                          value={formData.email}
+                          onChange={handleChange}
+                        />
+                      ) : (
+                        <p className="fw-semibold">{vendor.email}</p>
+                      )}
+                    </Form.Group>
+                  </Col>
+                </Row>
 
-          {/* Go to main Dashboard page */}
-          <Link
-            to="/dashboard"
-            className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
-      </div>
-    </div>
+                <Form.Group className="mb-3">
+                  <Form.Label>Address</Form.Label>
+                  {editMode ? (
+                    <Form.Control
+                      as="textarea"
+                      rows={2}
+                      name="address"
+                      value={formData.address}
+                      onChange={handleChange}
+                    />
+                  ) : (
+                    <p className="fw-semibold">{vendor.address}</p>
+                  )}
+                </Form.Group>
+              </Form>
+
+              {/* Action buttons */}
+              <div className="d-flex justify-content-between mt-4">
+                {editMode ? (
+                  <>
+                    <Button
+                      variant="success"
+                      onClick={handleSave}
+                      disabled={loading}
+                    >
+                      {loading ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => {
+                        setEditMode(false);
+                        setFormData(vendor);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="primary"
+                    onClick={() => setEditMode(true)}
+                  >
+                    Edit Profile
+                  </Button>
+                )}
+
+                <Link to="/dashboard">
+                  <Button variant="warning" className="text-dark fw-semibold">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 };
 
