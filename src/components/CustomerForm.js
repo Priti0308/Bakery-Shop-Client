@@ -84,7 +84,7 @@ const CustomerForm = () => {
       {/* --- Add/Edit Customer Card --- */}
       <div className="card shadow border-0 mb-5">
         <div className="card-body p-4">
-          <h2 className="text-primary mb-4">{editingId ? ' Update Customer' : ' Add Customer'}</h2>
+          <h2 className="text-dark mb-4">{editingId ? ' Update Customer' : ' Add Customer'}</h2>
           <form onSubmit={handleSubmit}>
             <div className="row g-4">
               <div className="col-md-4">
@@ -148,7 +148,7 @@ const CustomerForm = () => {
       {/* --- Customer List Table --- */}
       <div className="card shadow border-0">
         <div className="card-body p-4">
-          <h3 className="text-primary mb-3">📋 Customer List</h3>
+          <h3 className="text-dark mb-3">Customer List</h3>
           <div className="table-responsive">
             <table className="table table-hover table-striped align-middle">
               <thead className="table-dark">

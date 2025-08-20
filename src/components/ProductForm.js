@@ -214,11 +214,11 @@ const ProductForm = () => {
 
     try {
       const token = localStorage.getItem("vendorToken");
-    const vendorId = localStorage.getItem("vendorId");
+    // const vendorId = localStorage.getItem("vendorId");
 
       await axios.put(
         `${process.env.REACT_APP_BACKEND_URL}/api/products/${editId}`,
-        {editForm,vendor: vendorId},
+        editForm,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchProducts();

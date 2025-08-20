@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-// import logo from "./public/favicon.ico";
+import { toast } from "react-toastify";
 
-const Home = () => {
+const Login = () => {
   const navigate = useNavigate();
   const [role, setRole] = useState("admin");
   const [username, setUsername] = useState("");
@@ -13,32 +13,45 @@ const Home = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (role === "admin") {
-      // Add validation if needed
-      navigate("/admin/dashboard");
+      try {
+        // Call your backend admin login endpoint
+        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/admin/login`, {
+          username,
+          password,
+        });
+
+        if (res.data && res.data.token) {
+          localStorage.setItem("adminToken", res.data.token);
+          toast.success("Admin login successful!");
+          navigate("/admin/dashboard");
+        } else {
+          toast.error("Invalid admin credentials!");
+        }
+      } catch (err) {
+        toast.error(
+          err.response?.data?.message || "Admin login failed. Please check your credentials."
+        );
+      }
     } else {
       try {
-        
         const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/login`, {
           mobile: number,
-          password
+          password,
         });
-        console.log("Login response:", res.data); 
-        
         if (res.data.vendor && res.data.token) {
           localStorage.setItem("vendor", JSON.stringify(res.data.vendor));
           localStorage.setItem("vendorToken", res.data.token);
         } else if (res.data.token) {
-         
           const { token, ...vendorFields } = res.data;
           localStorage.setItem("vendor", JSON.stringify(vendorFields));
           localStorage.setItem("vendorToken", token);
         } else {
-        
           localStorage.setItem("vendor", JSON.stringify(res.data));
         }
+        toast.success("Vendor login successful!");
         navigate("/vendor/dashboard");
       } catch (error) {
-        alert(
+        toast.error(
           error.response?.data?.message || "Vendor login failed. Please check your credentials."
         );
       }
@@ -49,12 +62,10 @@ const Home = () => {
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
       <div className="card shadow-lg p-4" style={{ maxWidth: "400px", width: "100%" }}>
         <div className="text-center mb-3">
-          {/* <img src={logo} alt="Logo" style={{ width: "80px" }} /> */}
-          <h3 className="mt-2">Login</h3>
+          <h3 className="mt-2 fw-bold">Login</h3>
         </div>
 
         <form onSubmit={handleLogin}>
-          {/* Conditional Inputs Based on Role */}
           {role === "admin" ? (
             <>
               <div className="mb-3">
@@ -85,7 +96,6 @@ const Home = () => {
             </>
           )}
 
-          {/* Password Field */}
           <div className="mb-3">
             <label className="form-label">Password</label>
             <input
@@ -98,7 +108,6 @@ const Home = () => {
             />
           </div>
 
-          {/* Role Selection */}
           <div className="mb-3 d-flex justify-content-around">
             <div className="form-check">
               <input
@@ -130,7 +139,6 @@ const Home = () => {
             </div>
           </div>
 
-          {/* Login Button */}
           <button
             type="submit"
             className="btn w-100"
@@ -144,4 +152,4 @@ const Home = () => {
   );
 };
 
-export default Home;
+export default Login;

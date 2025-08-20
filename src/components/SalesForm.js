@@ -170,7 +170,7 @@ const SalesForm = () => {
   return (
     <div className="container py-5">
   <div className="bg-white shadow-lg rounded-4 p-5">
-    <h2 className="text-center text-primary mb-4 fw-bold border-bottom pb-3">
+    <h2 className="text-center text-dark mb-4 fw-bold border-bottom pb-3">
       🧾 Sales Billing Form
     </h2>
 
@@ -329,7 +329,7 @@ const SalesForm = () => {
       <button type="submit" onClick={handleSubmit} className="btn btn-success px-4 fw-bold">
         💾 Save Sale
       </button>
-      <button type="button" onClick={handleGeneratePDF} className="btn btn-outline-primary px-4 fw-bold">
+      <button type="button" onClick={handleGeneratePDF} className="btn btn-danger px-4 fw-bold">
         📄 Download Invoice
       </button>
     </div>

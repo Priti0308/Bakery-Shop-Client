@@ -35,7 +35,7 @@ const Reports = () => {
 
   return (
     <div className="container my-5">
-      <h2 className="text-center text-dark mb-5 ">📊 Bakery Sales Dashboard</h2>
+      <h2 className="text-center text-dark mb-5 fw-bold">📊 Bakery Sales Dashboard</h2>
 
       {loading ? (
         <div className="text-center text-white">
