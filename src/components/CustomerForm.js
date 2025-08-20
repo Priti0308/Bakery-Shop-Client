@@ -61,7 +61,10 @@ const CustomerForm = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this customer?')) return;
     try {
-      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/customers/${id}`);
+      const token = localStorage.getItem("vendorToken");
+      await axios.delete(`${process.env.REACT_APP_BACKEND_URL}/api/customers/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       toast.success('Customer deleted');
       fetchCustomers();
     } catch (err) {
