@@ -15,13 +15,17 @@ const Login = () => {
     if (role === "admin") {
       try {
         // Call your backend admin login endpoint
-        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/admin/login`, {
-          username,
-          password,
-        });
+        const res = await axios.post(
+          `${process.env.REACT_APP_BACKEND_URL}/api/admin/login`,
+          {
+            username,
+            password,
+          }
+        );
 
         if (res.data && res.data.token) {
           localStorage.setItem("adminToken", res.data.token);
+          localStorage.setItem("admin", JSON.stringify(res.data.admin));
           toast.success("Admin login successful!");
           navigate("/admin/dashboard");
         } else {
@@ -29,15 +33,19 @@ const Login = () => {
         }
       } catch (err) {
         toast.error(
-          err.response?.data?.message || "Admin login failed. Please check your credentials."
+          err.response?.data?.message ||
+            "Admin login failed. Please check your credentials."
         );
       }
     } else {
       try {
-        const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/api/vendors/login`, {
-          mobile: number,
-          password,
-        });
+        const res = await axios.post(
+          `${process.env.REACT_APP_BACKEND_URL}/api/vendors/login`,
+          {
+            mobile: number,
+            password,
+          }
+        );
         if (res.data.vendor && res.data.token) {
           localStorage.setItem("vendor", JSON.stringify(res.data.vendor));
           localStorage.setItem("vendorToken", res.data.token);
@@ -52,7 +60,8 @@ const Login = () => {
         navigate("/vendor/dashboard");
       } catch (error) {
         toast.error(
-          error.response?.data?.message || "Vendor login failed. Please check your credentials."
+          error.response?.data?.message ||
+            "Vendor login failed. Please check your credentials."
         );
       }
     }
@@ -60,7 +69,10 @@ const Login = () => {
 
   return (
     <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center bg-light">
-      <div className="card shadow-lg p-4" style={{ maxWidth: "400px", width: "100%" }}>
+      <div
+        className="card shadow-lg p-4"
+        style={{ maxWidth: "400px", width: "100%" }}
+      >
         <div className="text-center mb-3">
           <h3 className="mt-2 fw-bold">Login</h3>
         </div>
@@ -142,7 +154,11 @@ const Login = () => {
           <button
             type="submit"
             className="btn w-100"
-            style={{ backgroundColor: "#020c1bff", color: "#fff", fontWeight: "bold" }}
+            style={{
+              backgroundColor: "#020c1bff",
+              color: "#fff",
+              fontWeight: "bold",
+            }}
           >
             Login as {role === "admin" ? "Admin" : "Vendor"}
           </button>

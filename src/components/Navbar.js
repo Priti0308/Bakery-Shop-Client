@@ -1,14 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.bundle.min.js'; // This enables toggle functionality
-import '../App.css'; // Your custom styles
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'; 
+import '../App.css'; 
 
 const Navbar = () => (
   <nav className="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm px-4 py-2">
     <div className="container-fluid">
       <Link className="navbar-brand fw-bold text-warning fs-4" to="/">
-        इंद्रायणी बेकर्स
+        बेकर्स
       </Link>
 
       <button

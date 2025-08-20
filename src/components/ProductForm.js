@@ -262,7 +262,7 @@ const ProductForm = () => {
   return (
     <div className="container mt-4">
       <ToastContainer position="top-center" autoClose={2000} />
-      <h2 className="text-center mb-4 text-primary fw-bold">🛍 Add Product</h2>
+      <h2 className="text-center mb-4 text-dark fw-bold">🛍 Add Product</h2>
 
       <form
         onSubmit={handleSubmit}

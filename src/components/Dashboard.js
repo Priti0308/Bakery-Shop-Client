@@ -16,7 +16,7 @@ const Dashboard = () => {
     >
       <div className="container bg-white bg-opacity-75 rounded p-4 shadow">
         <div className="text-center mb-5">
-          <h1 className="display-4 fw-bold text-black">🍩 इंद्रायणी स्वीट्स अँड बेकर्स</h1>
+          <h1 className="display-4 fw-bold text-black">🍩स्वीट्स अँड बेकर्स</h1>
           <p className="lead text-secondary">Welcome to the best bakery and sweets shop in town!</p>
         </div>
 

@@ -1,5 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Card, Button, Form, Spinner, Container, Row, Col } from "react-bootstrap";
+import {
+  Card,
+  Button,
+  Form,
+  Spinner,
+  Container,
+  Row,
+  Col,
+} from "react-bootstrap";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
@@ -36,12 +44,12 @@ const VendorDashboard = () => {
       const token = localStorage.getItem("vendorToken");
 
       const res = await axios.put(
-        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/${vendor._id}`,
+        `${process.env.REACT_APP_BACKEND_URL}/api/vendors/me`,
         formData,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-
-      setVendor(res.data.vendor); 
+      
+      setVendor(res.data.vendor);
       localStorage.setItem("vendor", JSON.stringify(res.data.vendor));
       setEditMode(false);
       toast.success("Profile updated successfully!");
@@ -179,10 +187,7 @@ const VendorDashboard = () => {
                     </Button>
                   </>
                 ) : (
-                  <Button
-                    variant="primary"
-                    onClick={() => setEditMode(true)}
-                  >
+                  <Button variant="primary" onClick={() => setEditMode(true)}>
                     Edit Profile
                   </Button>
                 )}
